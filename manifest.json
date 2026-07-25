@@ -1,0 +1,17 @@
+{
+  "name": "Azulejo · Español A1",
+  "short_name": "Azulejo",
+  "description": "Испанский с нуля: приветствия, цвета, счёт и базовые фразы. Со таймером и сохранением прогресса.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E1D3A",
+  "theme_color": "#0E1D3A",
+  "lang": "ru",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

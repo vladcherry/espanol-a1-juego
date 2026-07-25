@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Azulejo · Español A1</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0E1D3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Azulejo">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --glaze:#0E1D3A;        /* кобальтовая глазурь */
+    --tile:#172E58;         /* плитка */
+    --tile-2:#1F3D72;
+    --cal:#EDE6D6;          /* известковая побелка */
+    --ocre:#E8A33D;         /* охра */
+    --verde:#3F9B74;
+    --carmin:#C4453C;
+    --muted:rgba(237,230,214,.58);
+    --line:rgba(237,230,214,.16);
+    --r:14px;
+    --display:'Anton','Arial Narrow',Impact,sans-serif;
+    --body:'Karla',system-ui,-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--glaze);color:var(--cal);font-family:var(--body)}
+  body{
+    min-height:100dvh;
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(31,61,114,.55), transparent 42%),
+      radial-gradient(circle at 88% 92%, rgba(232,163,61,.10), transparent 45%);
+  }
+  #app{
+    max-width:460px;margin:0 auto;
+    padding:calc(14px + env(safe-area-inset-top)) 16px calc(22px + env(safe-area-inset-bottom));
+  }
+  button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer}
+
+  /* ---------- шапка ---------- */
+  .top{display:flex;align-items:center;gap:12px;min-height:34px;margin-bottom:18px}
+  .top .back{width:34px;height:34px;border:1px solid var(--line);border-radius:10px;font-size:17px;line-height:1;display:grid;place-items:center;flex:0 0 auto}
+  .top .back:active{background:var(--tile)}
+  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ocre);font-weight:700}
+  .top h2{font-family:var(--display);font-size:19px;font-weight:400;letter-spacing:.02em;margin:2px 0 0;text-transform:uppercase}
+  .icon-btn{margin-left:auto;width:34px;height:34px;border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;font-size:15px}
+  .icon-btn.off{opacity:.4}
+
+  /* ---------- титул ---------- */
+  .hero{position:relative;padding:6px 0 4px}
+  .hero .word{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.86;letter-spacing:-.01em}
+  .hero .w1{font-size:clamp(46px,17vw,72px);color:var(--cal)}
+  .hero .w2{font-size:clamp(46px,17vw,72px);color:var(--ocre);margin-left:.06em}
+  .hero p{margin:14px 0 0;font-size:14.5px;line-height:1.5;color:var(--muted);max-width:30ch}
+  .rule{height:1px;background:var(--line);margin:22px 0}
+
+  /* ---------- мозаика (подпись проекта) ---------- */
+  .mosaic{display:grid;gap:4px;grid-template-columns:repeat(var(--cols,8),1fr)}
+  .cell{position:relative;aspect-ratio:1;border-radius:4px;background:var(--tile);overflow:hidden;transition:background .25s}
+  .cell::before,.cell::after{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s,transform .3s}
+  .cell::before{
+    background:
+      conic-gradient(from 45deg at 50% 50%, currentColor 0 25%, transparent 0 50%, currentColor 0 75%, transparent 0);
+    transform:scale(.55) rotate(0deg);
+  }
+  .cell.on{background:var(--tile-2)}
+  .cell.on::before{opacity:.95;transform:scale(.72) rotate(45deg)}
+  .cell.good{color:var(--ocre)}
+  .cell.bad{color:var(--carmin);background:rgba(196,69,60,.22)}
+  .cell.now{box-shadow:inset 0 0 0 2px var(--cal)}
+
+  /* ---------- карточки уровней ---------- */
+  .card{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg,rgba(31,61,114,.35),rgba(23,46,88,.15));padding:16px;margin-bottom:12px}
+  .card h3{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:22px;margin:6px 0 4px;letter-spacing:.01em}
+  .card .meta{font-size:12.5px;color:var(--muted)}
+  .row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 2px;border-top:1px solid var(--line)}
+  .row:active{background:rgba(237,230,214,.05)}
+  .row .num{font-family:var(--display);font-size:15px;color:var(--ocre);width:22px;flex:0 0 auto}
+  .row .name{font-size:15.5px;font-weight:500;line-height:1.25}
+  .row .sub{font-size:11.5px;color:var(--muted);margin-top:3px;letter-spacing:.04em}
+  .row .right{margin-left:auto;text-align:right;flex:0 0 auto}
+  .stars{font-size:12px;letter-spacing:2px;color:var(--ocre)}
+  .stars .dim{color:rgba(237,230,214,.22)}
+  .time{font-family:var(--display);font-size:15px;color:var(--cal);margin-top:2px}
+  .time.none{color:rgba(237,230,214,.3)}
+  .locked{opacity:.42}
+  .pill{display:inline-block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:4px 9px;color:var(--muted)}
+
+  /* ---------- кнопки ---------- */
+  .btn{display:block;width:100%;padding:15px;border-radius:12px;font-family:var(--display);font-size:17px;text-transform:uppercase;letter-spacing:.06em;background:var(--ocre);color:#20180A;margin-top:10px}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:none;border:1px solid var(--line);color:var(--cal)}
+  .btn.small{padding:12px;font-size:14px}
+
+  /* ---------- обучение ---------- */
+  .learn{border:1px solid var(--line);border-radius:var(--r);padding:26px 18px;text-align:center;background:linear-gradient(180deg,rgba(31,61,114,.4),transparent)}
+  .learn .es{font-family:var(--display);font-size:clamp(28px,9vw,40px);text-transform:none;line-height:1.05;letter-spacing:.01em}
+  .learn .tip{font-size:13px;color:var(--ocre);margin-top:10px;letter-spacing:.06em}
+  .learn .ru{font-size:16px;color:var(--cal);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .learn .swatch{width:76px;height:76px;border-radius:12px;margin:0 auto 18px;border:1px solid rgba(237,230,214,.25)}
+  .learn .digit{font-family:var(--display);font-size:74px;line-height:1;color:var(--ocre);margin-bottom:6px}
+  .counter{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);letter-spacing:.1em;margin:16px 0 10px}
+  .speak{margin:18px auto 0;width:52px;height:52px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
+  .speak:active{background:var(--tile)}
+
+  /* ---------- вопрос ---------- */
+  .qbar{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted);letter-spacing:.1em;margin:14px 0 16px}
+  .qbar .clock{font-family:var(--display);font-size:18px;color:var(--cal);letter-spacing:.04em}
+  .prompt{text-align:center;padding:8px 0 20px}
+  .prompt .ask{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ocre);margin-bottom:14px}
+  .prompt .big{font-family:var(--display);font-size:clamp(30px,10vw,44px);line-height:1.05}
+  .prompt .big.ru{font-family:var(--body);font-weight:700;font-size:clamp(22px,7vw,30px)}
+  .prompt .swatch{width:112px;height:112px;border-radius:14px;margin:0 auto;border:1px solid rgba(237,230,214,.25)}
+  .prompt .digit{font-family:var(--display);font-size:96px;line-height:1;color:var(--ocre)}
+  .opts{display:grid;gap:9px}
+  .opt{border:1px solid var(--line);border-radius:12px;padding:15px;font-size:16.5px;text-align:left;background:rgba(31,61,114,.22);transition:background .15s,border-color .15s}
+  .opt:active{background:var(--tile-2)}
+  .opt.correct{border-color:var(--verde);background:rgba(63,155,116,.26)}
+  .opt.wrong{border-color:var(--carmin);background:rgba(196,69,60,.22)}
+  .opt.dim{opacity:.4}
+  .verdict{min-height:22px;text-align:center;font-size:13.5px;margin-top:14px;color:var(--muted)}
+  .verdict b{color:var(--cal)}
+
+  /* ---------- итог ---------- */
+  .result{text-align:center;padding-top:6px}
+  .result .headline{font-family:var(--display);font-size:34px;text-transform:uppercase;line-height:1;margin:16px 0 6px}
+  .result .stars-big{font-size:26px;letter-spacing:8px;color:var(--ocre)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0 6px}
+  .stat{border:1px solid var(--line);border-radius:12px;padding:13px 10px}
+  .stat .k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .stat .v{font-family:var(--display);font-size:26px;margin-top:4px}
+  .stat .v.pr{color:var(--ocre)}
+  .missed{text-align:left;margin-top:20px}
+  .missed h4{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ocre);margin:0 0 8px}
+  .missed .m{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14.5px}
+  .missed .m .es{font-weight:700}
+  .missed .m .ru{color:var(--muted);font-size:13px}
+  .missed .m button{margin-left:auto;width:34px;height:34px;border:1px solid var(--line);border-radius:9px;flex:0 0 auto}
+  .foot{margin-top:26px;font-size:11.5px;color:rgba(237,230,214,.4);text-align:center;letter-spacing:.06em}
+  .note{font-size:12px;color:var(--carmin);text-align:center;margin-top:12px}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+  button:focus-visible,.row:focus-visible{outline:2px solid var(--ocre);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* =========================================================
+   AZULEJO · Español A1 — Nivel 1
+   Новые уровни добавляются одним объектом в массив LEVELS.
+   ========================================================= */
+
+const LEVELS = [
+  {
+    id: 1,
+    tag: 'Nivel A1 · Lección 1',
+    title: 'Первое знакомство',
+    note: 'Приветствия, цвета, счёт до десяти и десять фраз на каждый день.',
+    unlocked: true,
+    sections: [
+      {
+        id: 'saludos', title: 'Знакомство', tag: 'Saludos',
+        modes: ['es_ru','ru_es','audio_es'],
+        items: [
+          { es:'hola',              ru:'привет',            tip:'о́ла' },
+          { es:'buenos días',       ru:'доброе утро',       tip:'буэ́нос ди́ас' },
+          { es:'buenas tardes',     ru:'добрый день',       tip:'буэ́нас та́рдес' },
+          { es:'buenas noches',     ru:'добрый вечер',      tip:'буэ́нас но́чес' },
+          { es:'adiós',             ru:'до свидания',       tip:'адьо́с' },
+          { es:'¿cómo te llamas?',  ru:'как тебя зовут?',   tip:'ко́мо те я́мас' },
+          { es:'me llamo Ana',      ru:'меня зовут Ана',    tip:'ме я́мо а́на' },
+          { es:'mucho gusto',       ru:'очень приятно',     tip:'му́чо гу́сто' }
+        ]
+      },
+      {
+        id: 'colores', title: 'Цвета', tag: 'Colores',
+        modes: ['swatch','ru_es','audio_es','es_ru'],
+        items: [
+          { es:'rojo',     ru:'красный',   tip:'ро́хо',    color:'#D8332B' },
+          { es:'azul',     ru:'синий',     tip:'асу́ль',   color:'#1E63C8' },
+          { es:'verde',    ru:'зелёный',   tip:'ве́рде',   color:'#2E9E5B' },
+          { es:'amarillo', ru:'жёлтый',    tip:'амари́йо', color:'#F2C230' },
+          { es:'negro',    ru:'чёрный',    tip:'не́гро',   color:'#14161A' },
+          { es:'blanco',   ru:'белый',     tip:'бла́нко',  color:'#F5F2EA' },
+          { es:'naranja',  ru:'оранжевый', tip:'нара́нха', color:'#EE7C24' },
+          { es:'morado',   ru:'фиолетовый',tip:'мора́до',  color:'#7A3E9D' },
+          { es:'gris',     ru:'серый',     tip:'грис',     color:'#8B939C' },
+          { es:'rosa',     ru:'розовый',   tip:'ро́са',    color:'#E886A9' }
+        ]
+      },
+      {
+        id: 'numeros', title: 'Цифры 1–10', tag: 'Números',
+        modes: ['digit','audio_digit','ru_es','es_ru'],
+        items: [
+          { es:'uno',    ru:'один',    tip:'у́но',    digit:'1' },
+          { es:'dos',    ru:'два',     tip:'дос',    digit:'2' },
+          { es:'tres',   ru:'три',     tip:'трес',   digit:'3' },
+          { es:'cuatro', ru:'четыре',  tip:'куа́тро', digit:'4' },
+          { es:'cinco',  ru:'пять',    tip:'си́нко', digit:'5' },
+          { es:'seis',   ru:'шесть',   tip:'сэйс',   digit:'6' },
+          { es:'siete',  ru:'семь',    tip:'сье́те', digit:'7' },
+          { es:'ocho',   ru:'восемь',  tip:'о́чо',   digit:'8' },
+          { es:'nueve',  ru:'девять',  tip:'нуэ́ве', digit:'9' },
+          { es:'diez',   ru:'десять',  tip:'дьес',   digit:'10' }
+        ]
+      },
+      {
+        id: 'frases', title: '10 фраз', tag: 'Frases',
+        modes: ['es_ru','ru_es','audio_es'],
+        items: [
+          { es:'por favor',     ru:'пожалуйста (просьба)', tip:'пор фаво́р' },
+          { es:'gracias',       ru:'спасибо',              tip:'гра́сиас' },
+          { es:'de nada',       ru:'не за что',            tip:'де на́да' },
+          { es:'sí',            ru:'да',                   tip:'си' },
+          { es:'no',            ru:'нет',                  tip:'но' },
+          { es:'¿cómo estás?',  ru:'как ты?',              tip:'ко́мо эста́с' },
+          { es:'muy bien',      ru:'очень хорошо',         tip:'муй бье́н' },
+          { es:'lo siento',     ru:'мне жаль, извини',     tip:'ло сье́нто' },
+          { es:'hasta luego',   ru:'до скорого',           tip:'а́ста луэ́го' },
+          { es:'¡salud!',       ru:'будем здоровы!',       tip:'салу́д' }
+        ]
+      }
+    ]
+  },
+  { id: 2, tag: 'Nivel A1 · Lección 2', title: 'Семья и возраст', note: 'Скоро: родственники, глагол tener, числа до 100.', unlocked: false, sections: [] },
+  { id: 3, tag: 'Nivel A1 · Lección 3', title: 'В кафе',          note: 'Скоро: еда, напитки, заказ и счёт.',            unlocked: false, sections: [] }
+];
+
+const KEY = 'azulejo:progress:v1';
+const PER_Q_TARGET = 4200;   // мс на вопрос для трёх плиток
+const EXAM_SIZE = 16;
+
+let progress = { v:1, audio:true, sections:{}, exams:{} };
+let state = { view:'home', levelId:1, sectionId:null, exam:false, learn:0, quiz:null };
+let storageOK = true;
+
+/* ---------------- хранение ---------------- */
+const hasClaudeStorage = typeof window.storage === 'object' && window.storage && typeof window.storage.get === 'function';
+const box = {
+  async get(k){
+    if (hasClaudeStorage) return await window.storage.get(k);
+    const v = localStorage.getItem(k);
+    return v === null ? null : { key:k, value:v };
+  },
+  async set(k,v){
+    if (hasClaudeStorage) return await window.storage.set(k, v);
+    localStorage.setItem(k, v); return { key:k, value:v };
+  }
+};
+async function loadProgress(){
+  try{
+    const r = await box.get(KEY);
+    if (r && r.value) progress = Object.assign(progress, JSON.parse(r.value));
+  }catch(e){ /* ключа ещё нет — это норма */ }
+}
+async function saveProgress(){
+  try{ await box.set(KEY, JSON.stringify(progress)); }
+  catch(e){ storageOK = false; }
+}
+
+/* ---------------- озвучка ---------------- */
+const TTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
+let voice = null, voicesSeen = 0, audioNote = '';
+
+function pickVoice(){
+  if (!TTS) return null;
+  const vs = speechSynthesis.getVoices() || [];
+  voicesSeen = vs.length;
+  voice = vs.find(v => /^es[-_]ES/i.test(v.lang))
+       || vs.find(v => /^es[-_]MX/i.test(v.lang))
+       || vs.find(v => /^es/i.test(v.lang)) || null;
+  return voice;
+}
+if (TTS){
+  pickVoice();
+  speechSynthesis.onvoiceschanged = () => { pickVoice(); showNote(''); };
+}
+
+function showNote(text){
+  audioNote = text;
+  const el = document.getElementById('audio-note');
+  if (el){ el.textContent = text; el.style.display = text ? 'block' : 'none'; }
+}
+function speechError(code){
+  if (code === 'interrupted' || code === 'canceled') return;
+  if (code === 'not-allowed')
+    showNote('Браузер не даёт запустить звук сам. Нажми кнопку 🔊 — дальше будет работать.');
+  else if (code === 'language-unavailable' || code === 'voice-unavailable' || code === 'synthesis-unavailable')
+    showNote('В системе нет испанского голоса. Android: Настройки → Язык → Синтез речи → добавить español. iPhone: Универсальный доступ → Устный контент → Голоса → Español.');
+  else
+    showNote('Звук не запустился. Нажми 🔊 ещё раз или открой игру в отдельном окне браузера.');
+}
+
+function speak(text){
+  if (!progress.audio) return;
+  if (!TTS){ showNote('Этот браузер не умеет синтез речи. Открой игру в Chrome или Safari.'); return; }
+  try{
+    const ss = speechSynthesis;
+    if (ss.paused) ss.resume();
+    if (ss.speaking || ss.pending) ss.cancel();
+    if (!voice) pickVoice();
+    const u = new SpeechSynthesisUtterance(String(text).replace(/[¿¡!]/g,''));
+    u.lang = voice ? voice.lang : 'es-ES';
+    if (voice) u.voice = voice;
+    u.rate = 0.85; u.pitch = 1; u.volume = 1;
+    let started = false;
+    u.onstart = () => { started = true; showNote(''); };
+    u.onerror = ev => speechError(ev && ev.error);
+    ss.speak(u);
+    setTimeout(() => { if (!started && !ss.speaking && !ss.pending) speechError('no-start'); }, 1500);
+  }catch(e){ speechError('exception'); }
+}
+
+/* ---------------- утилиты ---------------- */
+const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const level = id => LEVELS.find(l=>l.id===id);
+const fmt = ms => {
+  const t = Math.max(0, Math.round(ms/1000));
+  return String(Math.floor(t/60)).padStart(2,'0') + ':' + String(t%60).padStart(2,'0');
+};
+const stars = n => '<span class="stars">' + '★'.repeat(n) + '<span class="dim">' + '★'.repeat(3-n) + '</span></span>';
+const recSection = (l,s) => progress.sections[l+':'+s] || null;
+const recExam = l => progress.exams[l] || null;
+
+function sectionsDone(lv){
+  return lv.sections.length > 0 && lv.sections.every(s => recSection(lv.id, s.id));
+}
+
+/* ---------------- сборка вопросов ---------------- */
+function makeQuestion(item, pool, modes){
+  const mode = modes[Math.floor(Math.random()*modes.length)];
+  const others = shuffle(pool.filter(x => x.es !== item.es)).slice(0,3);
+  let ask, view, options, correct;
+
+  if (mode === 'es_ru'){
+    ask = 'Что это значит?';
+    view = '<div class="big">'+esc(item.es)+'</div>';
+    options = shuffle([item, ...others]).map(x=>x.ru); correct = item.ru;
+  } else if (mode === 'ru_es'){
+    ask = 'Как сказать по-испански?';
+    view = '<div class="big ru">'+esc(item.ru)+'</div>';
+    options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
+  } else if (mode === 'swatch'){
+    ask = '¿De qué color es?';
+    view = '<div class="swatch" style="background:'+item.color+'"></div>';
+    options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
+  } else if (mode === 'digit'){
+    ask = 'Назови число';
+    view = '<div class="digit">'+esc(item.digit)+'</div>';
+    options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
+  } else if (mode === 'audio_digit'){
+    ask = 'Слушай и выбери цифру';
+    view = '<button class="speak" style="margin:6px auto 0" data-say="'+esc(item.es)+'" aria-label="Прослушать">🔊</button>';
+    options = shuffle([item, ...others]).map(x=>x.digit); correct = item.digit;
+  } else { // audio_es
+    ask = 'Слушай и выбери фразу';
+    view = '<button class="speak" style="margin:6px auto 0" data-say="'+esc(item.es)+'" aria-label="Прослушать">🔊</button>';
+    options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
+  }
+  return { item, mode, ask, view, options, correct, audio: mode.startsWith('audio') };
+}
+
+function startRun(levelId, sectionId, isExam){
+  const lv = level(levelId);
+  let questions;
+  if (isExam){
+    const all = [];
+    lv.sections.forEach(s => s.items.forEach(it => all.push({ it, s })));
+    questions = shuffle(all).slice(0, EXAM_SIZE).map(x => makeQuestion(x.it, x.s.items, x.s.modes));
+  } else {
+    const s = lv.sections.find(x=>x.id===sectionId);
+    questions = shuffle(s.items).map(it => makeQuestion(it, s.items, s.modes));
+  }
+  state.levelId = levelId; state.sectionId = sectionId; state.exam = !!isExam;
+  state.quiz = { questions, idx:0, results:[], startedAt:null, elapsed:0, locked:false };
+  state.view = 'quiz';
+  render();
+}
+
+/* ---------------- рендер ---------------- */
+const app = document.getElementById('app');
+function header(title, eyebrow, back){
+  return '<div class="top">'
+    + (back ? '<button class="back" data-go="'+back+'" aria-label="Назад">‹</button>' : '')
+    + '<div><div class="eyebrow">'+esc(eyebrow)+'</div><h2>'+esc(title)+'</h2></div>'
+    + '<button class="icon-btn'+(progress.audio?'':' off')+'" data-audio="1" aria-label="Звук">'+(progress.audio?'🔊':'🔇')+'</button>'
+    + '</div>'
+    + '<div class="note" id="audio-note" style="display:'+(audioNote?'block':'none')+';margin:-6px 0 12px">'+esc(audioNote)+'</div>';
+}
+
+function viewHome(){
+  let h = '<div class="hero"><div class="word w1">Azulejo</div><div class="word w2">Español</div>'
+        + '<p>Испанский с нуля — плитка за плиткой. Отвечай быстро: время каждого забега сохраняется.</p></div>';
+  h += '<div class="rule"></div>';
+
+  LEVELS.forEach(lv => {
+    if (!lv.unlocked){
+      h += '<div class="card locked"><span class="pill">Скоро</span><h3>'+esc(lv.title)+'</h3>'
+         + '<div class="meta">'+esc(lv.note)+'</div></div>';
+      return;
+    }
+    h += '<div class="card"><div class="eyebrow">'+esc(lv.tag)+'</div><h3>'+esc(lv.title)+'</h3>'
+       + '<div class="meta" style="margin-bottom:6px">'+esc(lv.note)+'</div>';
+    lv.sections.forEach((s,i) => {
+      const r = recSection(lv.id, s.id);
+      h += '<button class="row" data-play="'+lv.id+':'+s.id+'">'
+         + '<span class="num">0'+(i+1)+'</span>'
+         + '<span><span class="name">'+esc(s.title)+'</span>'
+         + '<span class="sub">'+esc(s.tag.toUpperCase())+' · '+s.items.length+' слов'+(r?' · забегов: '+r.runs:'')+'</span></span>'
+         + '<span class="right">'+(r ? stars(r.stars)+'<div class="time">'+fmt(r.best)+'</div>'
+                                     : '<div class="time none">—:—</div>')+'</span></button>';
+    });
+    const ex = recExam(lv.id), open = sectionsDone(lv);
+    h += '<button class="row'+(open?'':' locked')+'" data-exam="'+lv.id+'">'
+       + '<span class="num">★</span>'
+       + '<span><span class="name">Полный уровень</span><span class="sub">'
+       + (open ? EXAM_SIZE+' ВОПРОСОВ ВПЕРЕМЕШКУ' : 'ПРОЙДИ ВСЕ ЧЕТЫРЕ РАЗДЕЛА')+'</span></span>'
+       + '<span class="right">'+(ex ? stars(ex.stars)+'<div class="time">'+fmt(ex.best)+'</div>'
+                                    : '<div class="time none">—:—</div>')+'</span></button>';
+    h += '</div>';
+  });
+
+  h += '<button class="btn ghost small" data-test="1">🔊 Проверить звук — «hola»</button>';
+  h += '<div class="note" id="audio-note" style="display:'+(audioNote?'block':'none')+'">'+esc(audioNote)+'</div>';
+  h += '<button class="btn ghost small" data-reset="'+(state.resetArmed?'2':'1')+'">'
+     + (state.resetArmed ? 'Точно удалить? Нажми ещё раз' : 'Сбросить прогресс') + '</button>';
+  h += '<div class="foot">Прогресс и лучшее время хранятся между запусками</div>';
+  if (!storageOK) h += '<div class="note">Прогресс не сохраняется: хранилище недоступно.</div>';
+  return h;
+}
+
+function viewLearn(){
+  const lv = level(state.levelId);
+  const s = lv.sections.find(x=>x.id===state.sectionId);
+  const it = s.items[state.learn];
+  let card = '<div class="learn">';
+  if (it.color) card += '<div class="swatch" style="background:'+it.color+'"></div>';
+  if (it.digit) card += '<div class="digit">'+esc(it.digit)+'</div>';
+  card += '<div class="es">'+esc(it.es)+'</div>'
+        + '<div class="tip">['+esc(it.tip)+']</div>'
+        + '<div class="ru">'+esc(it.ru)+'</div>'
+        + '<button class="speak" data-say="'+esc(it.es)+'" aria-label="Прослушать">🔊</button>'
+        + '</div>';
+  return header(s.title, 'Aprende · '+s.tag, 'home')
+    + '<div class="counter"><span>'+(state.learn+1)+' / '+s.items.length+'</span><span>СЛУШАЙ И ПОВТОРЯЙ</span></div>'
+    + card
+    + '<button class="btn" data-next="1">'+(state.learn+1 < s.items.length ? 'Дальше' : 'Начать практику')+'</button>'
+    + (state.learn>0 ? '<button class="btn ghost small" data-prev="1">Назад</button>' : '')
+    + '<button class="btn ghost small" data-skip="1">Сразу к практике</button>';
+}
+
+function viewQuiz(){
+  const q = state.quiz, cur = q.questions[q.idx];
+  const lv = level(state.levelId);
+  const s = state.exam ? null : lv.sections.find(x=>x.id===state.sectionId);
+  const cols = Math.min(q.questions.length, 8);
+
+  let m = '<div class="mosaic" style="--cols:'+cols+'">';
+  q.questions.forEach((_,i) => {
+    const r = q.results[i];
+    m += '<div class="cell'+(r===true?' on good':r===false?' on bad':'')+(i===q.idx?' now':'')+'"></div>';
+  });
+  m += '</div>';
+
+  let opts = '<div class="opts">';
+  cur.options.forEach((o,i) => { opts += '<button class="opt" data-ans="'+i+'">'+esc(o)+'</button>'; });
+  opts += '</div>';
+
+  return header(state.exam ? 'Полный уровень' : s.title, state.exam ? 'Examen · '+lv.title : 'Practica · '+s.tag, 'home')
+    + m
+    + '<div class="qbar"><span>'+(q.idx+1)+' / '+q.questions.length+'</span><span class="clock" id="clock">00:00</span></div>'
+    + '<div class="prompt"><div class="ask">'+esc(cur.ask)+'</div>'+cur.view+'</div>'
+    + opts
+    + '<div class="verdict" id="verdict"></div>'
+    + '<button class="btn ghost small" data-say="'+esc(cur.item.es)+'">🔊 Слушать</button>';
+}
+
+function viewResult(){
+  const r = state.result;
+  const lv = level(state.levelId);
+  const s = state.exam ? null : lv.sections.find(x=>x.id===state.sectionId);
+  let h = header(state.exam ? 'Полный уровень' : s.title, 'Resultado', 'home');
+  h += '<div class="result">'
+     + '<div class="stars-big">'+'★'.repeat(r.stars)+'<span style="color:rgba(237,230,214,.22)">'+'★'.repeat(3-r.stars)+'</span></div>'
+     + '<div class="headline">'+(r.stars===3?'¡Perfecto!':r.stars===2?'¡Muy bien!':'¡Otra vez!')+'</div>'
+     + '<div class="grid2">'
+     + '<div class="stat"><div class="k">Время</div><div class="v">'+fmt(r.ms)+'</div></div>'
+     + '<div class="stat"><div class="k">Точность</div><div class="v">'+r.acc+'%</div></div>'
+     + '<div class="stat"><div class="k">Лучшее время</div><div class="v'+(r.isBest?' pr':'')+'">'+fmt(r.best)+'</div></div>'
+     + '<div class="stat"><div class="k">Сек / вопрос</div><div class="v">'+(r.ms/1000/r.total).toFixed(1)+'</div></div>'
+     + '</div>';
+  if (r.isBest) h += '<div class="eyebrow" style="margin-top:4px">Новый рекорд</div>';
+  if (r.missed.length){
+    h += '<div class="missed"><h4>Повтори это</h4>';
+    r.missed.forEach(it => {
+      h += '<div class="m"><span><span class="es">'+esc(it.es)+'</span><div class="ru">'+esc(it.ru)+'</div></span>'
+         + '<button data-say="'+esc(it.es)+'" aria-label="Прослушать">🔊</button></div>';
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+  h += '<button class="btn" data-again="1">Пройти снова</button>';
+  if (!state.exam) h += '<button class="btn ghost small" data-relearn="1">Повторить карточки</button>';
+  h += '<button class="btn ghost small" data-go="home">К уровням</button>';
+  return h;
+}
+
+function render(){
+  if (state.view === 'home') app.innerHTML = viewHome();
+  else if (state.view === 'learn') app.innerHTML = viewLearn();
+  else if (state.view === 'quiz'){ app.innerHTML = viewQuiz(); afterQuiz(); }
+  else if (state.view === 'result') app.innerHTML = viewResult();
+  window.scrollTo(0,0);
+}
+
+/* ---------------- таймер и логика забега ---------------- */
+let ticker = null;
+function afterQuiz(){
+  const q = state.quiz, cur = q.questions[q.idx];
+  if (q.startedAt === null) q.startedAt = Date.now();
+  clearInterval(ticker);
+  ticker = setInterval(() => {
+    const el = document.getElementById('clock');
+    if (el) el.textContent = fmt(Date.now() - q.startedAt);
+    else clearInterval(ticker);
+  }, 250);
+  if (cur.audio) speak(cur.item.es);
+}
+
+function answer(i){
+  const q = state.quiz;
+  if (q.locked) return;
+  const cur = q.questions[q.idx];
+  const chosen = cur.options[i];
+  const ok = chosen === cur.correct;
+  q.locked = true;
+  q.results[q.idx] = ok;
+
+  document.querySelectorAll('.opt').forEach((b,j) => {
+    if (cur.options[j] === cur.correct) b.classList.add('correct');
+    else if (j === i) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  document.querySelectorAll('.cell')[q.idx].classList.add('on', ok ? 'good' : 'bad');
+  const v = document.getElementById('verdict');
+  if (v) v.innerHTML = ok
+    ? '¡Correcto! <b>'+esc(cur.item.es)+'</b> — '+esc(cur.item.ru)
+    : 'Верно: <b>'+esc(cur.correct)+'</b> · '+esc(cur.item.es)+' — '+esc(cur.item.ru);
+  speak(cur.item.es);
+
+  setTimeout(() => {
+    q.locked = false;
+    if (q.idx + 1 < q.questions.length){ q.idx++; render(); }
+    else finish();
+  }, ok ? 750 : 1700);
+}
+
+async function finish(){
+  const q = state.quiz;
+  clearInterval(ticker);
+  const ms = Date.now() - q.startedAt;
+  const total = q.questions.length;
+  const right = q.results.filter(Boolean).length;
+  const acc = Math.round(right / total * 100);
+  const fast = ms <= PER_Q_TARGET * total;
+  const st = (acc === 100 && fast) ? 3 : (acc >= 80 ? 2 : 1);
+
+  const seen = new Set();
+  const missed = [];
+  q.questions.forEach((qq,i) => {
+    if (q.results[i] === false && !seen.has(qq.item.es)){ seen.add(qq.item.es); missed.push(qq.item); }
+  });
+
+  const store = state.exam ? progress.exams : progress.sections;
+  const key = state.exam ? String(state.levelId) : state.levelId + ':' + state.sectionId;
+  const prev = store[key];
+  const isBest = !prev || ms < prev.best;
+  store[key] = {
+    best: isBest ? ms : prev.best,
+    stars: Math.max(st, prev ? prev.stars : 0),
+    bestAcc: Math.max(acc, prev ? prev.bestAcc : 0),
+    runs: (prev ? prev.runs : 0) + 1
+  };
+  await saveProgress();
+
+  state.result = { ms, total, acc, stars: st, isBest, best: store[key].best, missed };
+  state.view = 'result';
+  render();
+}
+
+/* ---------------- события ---------------- */
+app.addEventListener('click', async (e) => {
+  const t = e.target.closest('[data-go],[data-play],[data-exam],[data-audio],[data-say],[data-next],[data-prev],[data-skip],[data-ans],[data-again],[data-relearn],[data-reset]');
+  if (!t) return;
+  const d = t.dataset;
+
+  if (d.say){ speak(d.say); return; }
+
+  if (d.audio){
+    progress.audio = !progress.audio;
+    if (!progress.audio){ if (TTS) speechSynthesis.cancel(); }
+    else speak('hola');
+    await saveProgress(); render(); return;
+  }
+  if (d.go){ clearInterval(ticker); state.view = d.go; render(); return; }
+
+  if (d.test){ speak('hola'); return; }
+  if (d.play){
+    const [lid, sid] = d.play.split(':');
+    state.levelId = +lid; state.sectionId = sid; state.exam = false; state.learn = 0;
+    speak(level(+lid).sections.find(x=>x.id===sid).items[0].es);
+    state.view = 'learn'; render();
+    return;
+  }
+  if (d.exam){
+    const lv = level(+d.exam);
+    if (!sectionsDone(lv)) return;
+    startRun(lv.id, null, true); return;
+  }
+  if (d.next){
+    const s = level(state.levelId).sections.find(x=>x.id===state.sectionId);
+    if (state.learn + 1 < s.items.length){
+      state.learn++; speak(s.items[state.learn].es); render();
+    } else startRun(state.levelId, state.sectionId, false);
+    return;
+  }
+  if (d.prev){
+    state.learn = Math.max(0, state.learn-1);
+    speak(level(state.levelId).sections.find(x=>x.id===state.sectionId).items[state.learn].es);
+    render(); return;
+  }
+  if (d.skip){ startRun(state.levelId, state.sectionId, false); return; }
+  if (d.ans){ answer(+d.ans); return; }
+  if (d.again){ startRun(state.levelId, state.sectionId, state.exam); return; }
+  if (d.relearn){ state.learn = 0; state.view = 'learn'; render(); return; }
+  if (d.reset){
+    if (d.reset === '1'){ state.resetArmed = true; render(); return; }
+    state.resetArmed = false;
+    progress.sections = {}; progress.exams = {};
+    await saveProgress(); render(); return;
+  }
+});
+
+/* ---------------- старт ---------------- */
+(async () => { await loadProgress(); render(); })();
+</script>
+<script>
+/* офлайн-режим и установка как приложение */
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
