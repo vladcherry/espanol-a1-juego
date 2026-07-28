@@ -1,4 +1,4 @@
-const CACHE = 'azulejo-v2';
+const CACHE = 'azulejo-v3';
 const ASSETS = [
   './',
   './index.html',
