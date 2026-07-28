@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -16,10 +16,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Karla:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --glaze:#0E1D3A;        /* кобальтовая глазурь */
+    --glaze:#0E1D3A;        /* кобальтова полива */
     --tile:#172E58;         /* плитка */
     --tile-2:#1F3D72;
-    --cal:#EDE6D6;          /* известковая побелка */
+    --cal:#EDE6D6;          /* вапняне побілення */
     --ocre:#E8A33D;         /* охра */
     --verde:#3F9B74;
     --carmin:#C4453C;
@@ -52,7 +52,7 @@
   .icon-btn{margin-left:auto;width:34px;height:34px;border:1px solid var(--line);border-radius:10px;display:grid;place-items:center;font-size:15px}
   .icon-btn.off{opacity:.4}
 
-  /* ---------- титул ---------- */
+  /* ---------- титул (заголовок) ---------- */
   .hero{position:relative;padding:6px 0 4px}
   .hero .word{font-family:var(--display);font-weight:400;text-transform:uppercase;line-height:.86;letter-spacing:-.01em}
   .hero .w1{font-size:clamp(46px,17vw,72px);color:var(--cal)}
@@ -60,7 +60,7 @@
   .hero p{margin:14px 0 0;font-size:14.5px;line-height:1.5;color:var(--muted);max-width:30ch}
   .rule{height:1px;background:var(--line);margin:22px 0}
 
-  /* ---------- мозаика (подпись проекта) ---------- */
+  /* ---------- мозаїка (підпис проєкту) ---------- */
   .mosaic{display:grid;gap:4px;grid-template-columns:repeat(var(--cols,8),1fr)}
   .cell{position:relative;aspect-ratio:1;border-radius:4px;background:var(--tile);overflow:hidden;transition:background .25s}
   .cell::before,.cell::after{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s,transform .3s}
@@ -75,7 +75,7 @@
   .cell.bad{color:var(--carmin);background:rgba(196,69,60,.22)}
   .cell.now{box-shadow:inset 0 0 0 2px var(--cal)}
 
-  /* ---------- карточки уровней ---------- */
+  /* ---------- картки рівнів ---------- */
   .card{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg,rgba(31,61,114,.35),rgba(23,46,88,.15));padding:16px;margin-bottom:12px}
   .card h3{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:22px;margin:6px 0 4px;letter-spacing:.01em}
   .card .meta{font-size:12.5px;color:var(--muted)}
@@ -87,6 +87,13 @@
   .row .right{margin-left:auto;text-align:right;flex:0 0 auto}
   .stars{font-size:12px;letter-spacing:2px;color:var(--ocre)}
   .stars .dim{color:rgba(237,230,214,.22)}
+  button.card{display:block;width:100%;text-align:left}
+  .card.done{padding:14px 16px}
+  .done-head{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:0}
+  .done-head h3{margin:4px 0}
+  .bolts{margin-left:auto;font-size:16px;letter-spacing:2px;color:var(--ocre);white-space:nowrap}
+  .bolts .dim{color:rgba(237,230,214,.22)}
+  .chev{font-size:11px;color:var(--muted);flex:0 0 auto}
   .time{font-family:var(--display);font-size:15px;color:var(--cal);margin-top:2px}
   .time.none{color:rgba(237,230,214,.3)}
   .locked{opacity:.42}
@@ -98,7 +105,7 @@
   .btn.ghost{background:none;border:1px solid var(--line);color:var(--cal)}
   .btn.small{padding:12px;font-size:14px}
 
-  /* ---------- обучение ---------- */
+  /* ---------- навчання ---------- */
   .learn{border:1px solid var(--line);border-radius:var(--r);padding:26px 18px;text-align:center;background:linear-gradient(180deg,rgba(31,61,114,.4),transparent)}
   .learn .es{font-family:var(--display);font-size:clamp(28px,9vw,40px);text-transform:none;line-height:1.05;letter-spacing:.01em}
   .learn .tip{font-size:13px;color:var(--ocre);margin-top:10px;letter-spacing:.06em}
@@ -109,7 +116,7 @@
   .speak{margin:18px auto 0;width:52px;height:52px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
   .speak:active{background:var(--tile)}
 
-  /* ---------- вопрос ---------- */
+  /* ---------- питання ---------- */
   .qbar{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted);letter-spacing:.1em;margin:14px 0 16px}
   .qbar .clock{font-family:var(--display);font-size:18px;color:var(--cal);letter-spacing:.04em}
   .prompt{text-align:center;padding:8px 0 20px}
@@ -127,7 +134,7 @@
   .verdict{min-height:22px;text-align:center;font-size:13.5px;margin-top:14px;color:var(--muted)}
   .verdict b{color:var(--cal)}
 
-  /* ---------- итог ---------- */
+  /* ---------- підсумок ---------- */
   .result{text-align:center;padding-top:6px}
   .result .headline{font-family:var(--display);font-size:34px;text-transform:uppercase;line-height:1;margin:16px 0 6px}
   .result .stars-big{font-size:26px;letter-spacing:8px;color:var(--ocre)}
@@ -154,94 +161,167 @@
 <script>
 /* =========================================================
    AZULEJO · Español A1 — Nivel 1
-   Новые уровни добавляются одним объектом в массив LEVELS.
+   Нові рівні додаються одним об'єктом у масив LEVELS.
    ========================================================= */
 
 const LEVELS = [
   {
     id: 1,
     tag: 'Nivel A1 · Lección 1',
-    title: 'Первое знакомство',
-    note: 'Приветствия, цвета, счёт до десяти и десять фраз на каждый день.',
+    title: 'Перше знайомство',
+    note: 'Привітання, кольори, лічба до десяти та десять фраз на кожен день.',
     unlocked: true,
     sections: [
       {
-        id: 'saludos', title: 'Знакомство', tag: 'Saludos',
+        id: 'saludos', title: 'Знайомство', tag: 'Saludos',
         modes: ['es_ru','ru_es','audio_es'],
         items: [
-          { es:'hola',              ru:'привет',            tip:'о́ла' },
-          { es:'buenos días',       ru:'доброе утро',       tip:'буэ́нос ди́ас' },
-          { es:'buenas tardes',     ru:'добрый день',       tip:'буэ́нас та́рдес' },
-          { es:'buenas noches',     ru:'добрый вечер',      tip:'буэ́нас но́чес' },
-          { es:'adiós',             ru:'до свидания',       tip:'адьо́с' },
-          { es:'¿cómo te llamas?',  ru:'как тебя зовут?',   tip:'ко́мо те я́мас' },
-          { es:'me llamo Ana',      ru:'меня зовут Ана',    tip:'ме я́мо а́на' },
-          { es:'mucho gusto',       ru:'очень приятно',     tip:'му́чо гу́сто' }
+          { es:'hola',              ru:'привіт',            tip:'о́ла' },
+          { es:'buenos días',       ru:'добрий ранок',      tip:'буе́нос ді́ас' },
+          { es:'buenas tardes',     ru:'добрий день',       tip:'буе́нас та́рдес' },
+          { es:'buenas noches',     ru:'добрий вечір',      tip:'буе́нас но́чес' },
+          { es:'adiós',             ru:'до побачення',      tip:'адьйо́с' },
+          { es:'¿cómo te llamas?',  ru:'як тебе звати?',    tip:'ко́мо те я́мас' },
+          { es:'me llamo Ana',      ru:'мене звати Ана',    tip:'ме я́мо а́на' },
+          { es:'mucho gusto',       ru:'дуже приємно',      tip:'му́чо ґу́сто' }
         ]
       },
       {
-        id: 'colores', title: 'Цвета', tag: 'Colores',
+        id: 'colores', title: 'Кольори', tag: 'Colores',
         modes: ['swatch','ru_es','audio_es','es_ru'],
         items: [
-          { es:'rojo',     ru:'красный',   tip:'ро́хо',    color:'#D8332B' },
-          { es:'azul',     ru:'синий',     tip:'асу́ль',   color:'#1E63C8' },
-          { es:'verde',    ru:'зелёный',   tip:'ве́рде',   color:'#2E9E5B' },
-          { es:'amarillo', ru:'жёлтый',    tip:'амари́йо', color:'#F2C230' },
-          { es:'negro',    ru:'чёрный',    tip:'не́гро',   color:'#14161A' },
-          { es:'blanco',   ru:'белый',     tip:'бла́нко',  color:'#F5F2EA' },
-          { es:'naranja',  ru:'оранжевый', tip:'нара́нха', color:'#EE7C24' },
-          { es:'morado',   ru:'фиолетовый',tip:'мора́до',  color:'#7A3E9D' },
-          { es:'gris',     ru:'серый',     tip:'грис',     color:'#8B939C' },
-          { es:'rosa',     ru:'розовый',   tip:'ро́са',    color:'#E886A9' }
+          { es:'rojo',     ru:'червоний',   tip:'ро́хо',    color:'#D8332B' },
+          { es:'azul',     ru:'синій',      tip:'асу́ль',   color:'#1E63C8' },
+          { es:'verde',    ru:'зелений',    tip:'ве́рде',   color:'#2E9E5B' },
+          { es:'amarillo', ru:'жовтий',     tip:'амарі́йо', color:'#F2C230' },
+          { es:'negro',    ru:'чорний',     tip:'не́ґро',   color:'#14161A' },
+          { es:'blanco',   ru:'білий',      tip:'бла́нко',  color:'#F5F2EA' },
+          { es:'naranja',  ru:'помаранчевий',tip:'нара́нха',color:'#EE7C24' },
+          { es:'morado',   ru:'фіолетовий', tip:'мора́до',  color:'#7A3E9D' },
+          { es:'gris',     ru:'сірий',      tip:'ґріс',     color:'#8B939C' },
+          { es:'rosa',     ru:'рожевий',    tip:'ро́са',    color:'#E886A9' }
         ]
       },
       {
-        id: 'numeros', title: 'Цифры 1–10', tag: 'Números',
+        id: 'numeros', title: 'Цифри 1–10', tag: 'Números',
         modes: ['digit','audio_digit','ru_es','es_ru'],
         items: [
-          { es:'uno',    ru:'один',    tip:'у́но',    digit:'1' },
-          { es:'dos',    ru:'два',     tip:'дос',    digit:'2' },
-          { es:'tres',   ru:'три',     tip:'трес',   digit:'3' },
-          { es:'cuatro', ru:'четыре',  tip:'куа́тро', digit:'4' },
-          { es:'cinco',  ru:'пять',    tip:'си́нко', digit:'5' },
-          { es:'seis',   ru:'шесть',   tip:'сэйс',   digit:'6' },
-          { es:'siete',  ru:'семь',    tip:'сье́те', digit:'7' },
-          { es:'ocho',   ru:'восемь',  tip:'о́чо',   digit:'8' },
-          { es:'nueve',  ru:'девять',  tip:'нуэ́ве', digit:'9' },
-          { es:'diez',   ru:'десять',  tip:'дьес',   digit:'10' }
+          { es:'uno',    ru:'один',     tip:'у́но',    digit:'1' },
+          { es:'dos',    ru:'два',      tip:'дос',    digit:'2' },
+          { es:'tres',   ru:'три',      tip:'трес',   digit:'3' },
+          { es:'cuatro', ru:'чотири',   tip:'куа́тро', digit:'4' },
+          { es:'cinco',  ru:'п’ять',    tip:'сі́нко', digit:'5' },
+          { es:'seis',   ru:'шість',    tip:'сейс',   digit:'6' },
+          { es:'siete',  ru:'сім',      tip:'сьє́те', digit:'7' },
+          { es:'ocho',   ru:'вісім',    tip:'о́чо',   digit:'8' },
+          { es:'nueve',  ru:'дев’ять',  tip:'нуе́ве', digit:'9' },
+          { es:'diez',   ru:'десять',   tip:'дьєс',   digit:'10' }
         ]
       },
       {
         id: 'frases', title: '10 фраз', tag: 'Frases',
         modes: ['es_ru','ru_es','audio_es'],
         items: [
-          { es:'por favor',     ru:'пожалуйста (просьба)', tip:'пор фаво́р' },
-          { es:'gracias',       ru:'спасибо',              tip:'гра́сиас' },
-          { es:'de nada',       ru:'не за что',            tip:'де на́да' },
-          { es:'sí',            ru:'да',                   tip:'си' },
-          { es:'no',            ru:'нет',                  tip:'но' },
-          { es:'¿cómo estás?',  ru:'как ты?',              tip:'ко́мо эста́с' },
-          { es:'muy bien',      ru:'очень хорошо',         tip:'муй бье́н' },
-          { es:'lo siento',     ru:'мне жаль, извини',     tip:'ло сье́нто' },
-          { es:'hasta luego',   ru:'до скорого',           tip:'а́ста луэ́го' },
-          { es:'¡salud!',       ru:'будем здоровы!',       tip:'салу́д' }
+          { es:'por favor',     ru:'будь ласка (прохання)', tip:'пор фаво́р' },
+          { es:'gracias',       ru:'дякую',                 tip:'ґра́сіас' },
+          { es:'de nada',       ru:'нема за що',            tip:'де на́да' },
+          { es:'sí',            ru:'так',                   tip:'сі' },
+          { es:'no',            ru:'ні',                    tip:'но' },
+          { es:'¿cómo estás?',  ru:'як справи?',            tip:'ко́мо еста́с' },
+          { es:'muy bien',      ru:'дуже добре',            tip:'муй бье́н' },
+          { es:'lo siento',     ru:'мені шкода, вибач',     tip:'ло сье́нто' },
+          { es:'hasta luego',   ru:'до зустрічі',           tip:'а́ста луе́ґо' },
+          { es:'¡salud!',       ru:'будьмо здорові!',       tip:'салу́д' }
         ]
       }
     ]
   },
-  { id: 2, tag: 'Nivel A1 · Lección 2', title: 'Семья и возраст', note: 'Скоро: родственники, глагол tener, числа до 100.', unlocked: false, sections: [] },
-  { id: 3, tag: 'Nivel A1 · Lección 3', title: 'В кафе',          note: 'Скоро: еда, напитки, заказ и счёт.',            unlocked: false, sections: [] }
+  {
+    id: 2,
+    tag: 'Nivel A1 · Lección 2',
+    title: 'У кафе',
+    note: 'Напої та їжа — усе, що замовляють за столиком.',
+    unlocked: true,
+    sections: [
+      {
+        id: 'bebidas', title: 'Напої', tag: 'Bebidas',
+        modes: ['es_ru','ru_es','audio_es'],
+        items: [
+          { es:'agua',               ru:'вода',            tip:'а́ґуа' },
+          { es:'cerveza',            ru:'пиво',            tip:'серве́са' },
+          { es:'café',               ru:'кава',            tip:'кафе́' },
+          { es:'té',                 ru:'чай',             tip:'те' },
+          { es:'leche',              ru:'молоко',          tip:'ле́че' },
+          { es:'zumo',               ru:'сік',             tip:'су́мо' },
+          { es:'limonada',           ru:'лимонад',         tip:'лімона́да' },
+          { es:'licuado',            ru:'смузі',           tip:'ліку́адо' },
+          { es:'chocolate caliente', ru:'гарячий шоколад', tip:'чокола́те кальє́нте' },
+          { es:'refresco',           ru:'газований напій', tip:'рефре́ско' },
+          { es:'cóctel',             ru:'коктейль',        tip:'ко́ктель' },
+          { es:'vino',               ru:'вино',            tip:'ві́но' }
+        ]
+      },
+      {
+        id: 'comida1', title: 'Їжа I', tag: 'La comida',
+        modes: ['es_ru','ru_es','audio_es'],
+        items: [
+          { es:'tacos',            ru:'тако',          tip:'та́кос' },
+          { es:'sándwich',         ru:'сендвіч',       tip:'са́ндвіч' },
+          { es:'bocadillo',        ru:'бутерброд',     tip:'бокаді́йо' },
+          { es:'perrito caliente', ru:'хот-дог',       tip:'перрі́то кальє́нте' },
+          { es:'sopa',             ru:'суп',           tip:'со́па' },
+          { es:'pasta',            ru:'паста',         tip:'па́ста' },
+          { es:'salchichas',       ru:'сосиски',       tip:'сальчі́час' },
+          { es:'patatas fritas',   ru:'картопля фрі',  tip:'пата́тас фрі́тас' },
+          { es:'pescado',          ru:'риба',          tip:'песка́до' },
+          { es:'pan',              ru:'хліб',          tip:'пан' },
+          { es:'pizza',            ru:'піца',          tip:'пі́ца' }
+        ]
+      },
+      {
+        id: 'comida2', title: 'Їжа II', tag: 'La comida',
+        modes: ['es_ru','ru_es','audio_es'],
+        items: [
+          { es:'huevos',       ru:'яйця',      tip:'уе́вос' },
+          { es:'carne',        ru:'м’ясо',     tip:'ка́рне' },
+          { es:'chips',        ru:'чипси',     tip:'чіпс' },
+          { es:'queso',        ru:'сир',       tip:'ке́со' },
+          { es:'pollo',        ru:'курка',     tip:'по́йо' },
+          { es:'ensalada',     ru:'салат',     tip:'енсала́да' },
+          { es:'palomitas',    ru:'попкорн',   tip:'паломі́тас' },
+          { es:'sushi',        ru:'суші',      tip:'су́ші' },
+          { es:'hamburguesa',  ru:'гамбургер', tip:'амбурґе́са' },
+          { es:'pinchito',     ru:'шашличок',  tip:'пінчі́то' },
+          { es:'cruasán',      ru:'круасан',   tip:'круаса́н' },
+          { es:'paella',       ru:'паелья',    tip:'пае́йя' },
+          { es:'barra de pan', ru:'багет',     tip:'ба́рра де пан' }
+        ]
+      },
+      {
+        id: 'postres', title: 'Десерти', tag: 'Postres',
+        modes: ['es_ru','ru_es','audio_es'],
+        items: [
+          { es:'tarta',     ru:'торт',    tip:'та́рта' },
+          { es:'chocolate', ru:'шоколад', tip:'чокола́те' },
+          { es:'galletas',  ru:'печиво',  tip:'ґайє́тас' },
+          { es:'churro',    ru:'чурос',   tip:'чу́рро' },
+          { es:'gelatina',  ru:'желе',    tip:'хелаті́на' },
+          { es:'merengue',  ru:'безе',    tip:'мере́нґе' }
+        ]
+      }
+    ]
+  }
 ];
 
 const KEY = 'azulejo:progress:v1';
-const PER_Q_TARGET = 4200;   // мс на вопрос для трёх плиток
+const PER_Q_TARGET = 4200;   // мс на питання для трьох плиток
 const EXAM_SIZE = 16;
 
 let progress = { v:1, audio:true, sections:{}, exams:{} };
-let state = { view:'home', levelId:1, sectionId:null, exam:false, learn:0, quiz:null };
+let state = { view:'home', levelId:1, sectionId:null, exam:false, learn:0, quiz:null, expanded:{} };
 let storageOK = true;
 
-/* ---------------- хранение ---------------- */
+/* ---------------- зберігання ---------------- */
 const hasClaudeStorage = typeof window.storage === 'object' && window.storage && typeof window.storage.get === 'function';
 const box = {
   async get(k){
@@ -258,14 +338,14 @@ async function loadProgress(){
   try{
     const r = await box.get(KEY);
     if (r && r.value) progress = Object.assign(progress, JSON.parse(r.value));
-  }catch(e){ /* ключа ещё нет — это норма */ }
+  }catch(e){ /* ключа ще немає — це нормально */ }
 }
 async function saveProgress(){
   try{ await box.set(KEY, JSON.stringify(progress)); }
   catch(e){ storageOK = false; }
 }
 
-/* ---------------- озвучка ---------------- */
+/* ---------------- озвучення ---------------- */
 const TTS = 'speechSynthesis' in window && typeof SpeechSynthesisUtterance === 'function';
 let voice = null, voicesSeen = 0, audioNote = '';
 
@@ -291,16 +371,16 @@ function showNote(text){
 function speechError(code){
   if (code === 'interrupted' || code === 'canceled') return;
   if (code === 'not-allowed')
-    showNote('Браузер не даёт запустить звук сам. Нажми кнопку 🔊 — дальше будет работать.');
+    showNote('Браузер не дає запустити звук сам. Натисни кнопку 🔊 — далі працюватиме.');
   else if (code === 'language-unavailable' || code === 'voice-unavailable' || code === 'synthesis-unavailable')
-    showNote('В системе нет испанского голоса. Android: Настройки → Язык → Синтез речи → добавить español. iPhone: Универсальный доступ → Устный контент → Голоса → Español.');
+    showNote('У системі немає іспанського голосу. Android: Налаштування → Мова → Синтез мовлення → додати español. iPhone: Універсальний доступ → Усний контент → Голоси → Español.');
   else
-    showNote('Звук не запустился. Нажми 🔊 ещё раз или открой игру в отдельном окне браузера.');
+    showNote('Звук не запустився. Натисни 🔊 ще раз або відкрий гру в окремому вікні браузера.');
 }
 
 function speak(text){
   if (!progress.audio) return;
-  if (!TTS){ showNote('Этот браузер не умеет синтез речи. Открой игру в Chrome или Safari.'); return; }
+  if (!TTS){ showNote('Цей браузер не вміє синтезувати мовлення. Відкрий гру в Chrome або Safari.'); return; }
   try{
     const ss = speechSynthesis;
     if (ss.paused) ss.resume();
@@ -318,7 +398,7 @@ function speak(text){
   }catch(e){ speechError('exception'); }
 }
 
-/* ---------------- утилиты ---------------- */
+/* ---------------- утиліти ---------------- */
 const shuffle = a => a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(p=>p[1]);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const level = id => LEVELS.find(l=>l.id===id);
@@ -333,19 +413,25 @@ const recExam = l => progress.exams[l] || null;
 function sectionsDone(lv){
   return lv.sections.length > 0 && lv.sections.every(s => recSection(lv.id, s.id));
 }
+const bolts = n => '<span class="bolts">' + '⚡'.repeat(n) + '<span class="dim">' + '⚡'.repeat(Math.max(0,3-n)) + '</span></span>';
+function levelAvgStars(lv){
+  const recs = lv.sections.map(s => recSection(lv.id, s.id)).filter(Boolean);
+  if (!recs.length) return 0;
+  return Math.round(recs.reduce((a,r) => a + r.stars, 0) / recs.length);
+}
 
-/* ---------------- сборка вопросов ---------------- */
+/* ---------------- складання питань ---------------- */
 function makeQuestion(item, pool, modes){
   const mode = modes[Math.floor(Math.random()*modes.length)];
   const others = shuffle(pool.filter(x => x.es !== item.es)).slice(0,3);
   let ask, view, options, correct;
 
   if (mode === 'es_ru'){
-    ask = 'Что это значит?';
+    ask = 'Що це означає?';
     view = '<div class="big">'+esc(item.es)+'</div>';
     options = shuffle([item, ...others]).map(x=>x.ru); correct = item.ru;
   } else if (mode === 'ru_es'){
-    ask = 'Как сказать по-испански?';
+    ask = 'Як сказати іспанською?';
     view = '<div class="big ru">'+esc(item.ru)+'</div>';
     options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
   } else if (mode === 'swatch'){
@@ -353,16 +439,16 @@ function makeQuestion(item, pool, modes){
     view = '<div class="swatch" style="background:'+item.color+'"></div>';
     options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
   } else if (mode === 'digit'){
-    ask = 'Назови число';
+    ask = 'Назви число';
     view = '<div class="digit">'+esc(item.digit)+'</div>';
     options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
   } else if (mode === 'audio_digit'){
-    ask = 'Слушай и выбери цифру';
-    view = '<button class="speak" style="margin:6px auto 0" data-say="'+esc(item.es)+'" aria-label="Прослушать">🔊</button>';
+    ask = 'Слухай і вибери цифру';
+    view = '<button class="speak" style="margin:6px auto 0" data-say="'+esc(item.es)+'" aria-label="Прослухати">🔊</button>';
     options = shuffle([item, ...others]).map(x=>x.digit); correct = item.digit;
   } else { // audio_es
-    ask = 'Слушай и выбери фразу';
-    view = '<button class="speak" style="margin:6px auto 0" data-say="'+esc(item.es)+'" aria-label="Прослушать">🔊</button>';
+    ask = 'Слухай і вибери фразу';
+    view = '<button class="speak" style="margin:6px auto 0" data-say="'+esc(item.es)+'" aria-label="Прослухати">🔊</button>';
     options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
   }
   return { item, mode, ask, view, options, correct, audio: mode.startsWith('audio') };
@@ -398,42 +484,51 @@ function header(title, eyebrow, back){
 
 function viewHome(){
   let h = '<div class="hero"><div class="word w1">Azulejo</div><div class="word w2">Español</div>'
-        + '<p>Испанский с нуля — плитка за плиткой. Отвечай быстро: время каждого забега сохраняется.</p></div>';
+        + '<p>Іспанська з нуля — плитка за плиткою. Відповідай швидко: час кожного забігу зберігається.</p></div>';
   h += '<div class="rule"></div>';
 
   LEVELS.forEach(lv => {
     if (!lv.unlocked){
-      h += '<div class="card locked"><span class="pill">Скоро</span><h3>'+esc(lv.title)+'</h3>'
+      h += '<div class="card locked"><span class="pill">Незабаром</span><h3>'+esc(lv.title)+'</h3>'
          + '<div class="meta">'+esc(lv.note)+'</div></div>';
       return;
     }
-    h += '<div class="card"><div class="eyebrow">'+esc(lv.tag)+'</div><h3>'+esc(lv.title)+'</h3>'
-       + '<div class="meta" style="margin-bottom:6px">'+esc(lv.note)+'</div>';
+    const done = sectionsDone(lv);
+    if (done && !state.expanded[lv.id]){
+      h += '<button class="card done" data-toggle="'+lv.id+'">'
+         + '<div class="eyebrow">'+esc(lv.tag)+'</div>'
+         + '<div class="done-head"><h3>'+esc(lv.title)+'</h3>'+bolts(levelAvgStars(lv))+'<span class="chev">▼</span></div>'
+         + '</button>';
+      return;
+    }
+    h += '<div class="card"><div class="eyebrow">'+esc(lv.tag)+'</div>';
+    if (done){
+      h += '<button class="done-head" data-toggle="'+lv.id+'"><h3>'+esc(lv.title)+'</h3>'+bolts(levelAvgStars(lv))+'<span class="chev">▲</span></button>';
+    } else {
+      h += '<h3>'+esc(lv.title)+'</h3>';
+    }
+    h += '<div class="meta" style="margin-bottom:6px">'+esc(lv.note)+'</div>';
     lv.sections.forEach((s,i) => {
       const r = recSection(lv.id, s.id);
       h += '<button class="row" data-play="'+lv.id+':'+s.id+'">'
          + '<span class="num">0'+(i+1)+'</span>'
          + '<span><span class="name">'+esc(s.title)+'</span>'
-         + '<span class="sub">'+esc(s.tag.toUpperCase())+' · '+s.items.length+' слов'+(r?' · забегов: '+r.runs:'')+'</span></span>'
+         + '<span class="sub">'+esc(s.tag.toUpperCase())+' · '+s.items.length+' слів'+(r?' · забігів: '+r.runs:'')+'</span></span>'
          + '<span class="right">'+(r ? stars(r.stars)+'<div class="time">'+fmt(r.best)+'</div>'
                                      : '<div class="time none">—:—</div>')+'</span></button>';
     });
     const ex = recExam(lv.id), open = sectionsDone(lv);
     h += '<button class="row'+(open?'':' locked')+'" data-exam="'+lv.id+'">'
        + '<span class="num">★</span>'
-       + '<span><span class="name">Полный уровень</span><span class="sub">'
-       + (open ? EXAM_SIZE+' ВОПРОСОВ ВПЕРЕМЕШКУ' : 'ПРОЙДИ ВСЕ ЧЕТЫРЕ РАЗДЕЛА')+'</span></span>'
+       + '<span><span class="name">Повний рівень</span><span class="sub">'
+       + (open ? EXAM_SIZE+' ПИТАНЬ УПЕРЕМІШ' : 'ПРОЙДИ ВСІ РОЗДІЛИ')+'</span></span>'
        + '<span class="right">'+(ex ? stars(ex.stars)+'<div class="time">'+fmt(ex.best)+'</div>'
                                     : '<div class="time none">—:—</div>')+'</span></button>';
     h += '</div>';
   });
 
-  h += '<button class="btn ghost small" data-test="1">🔊 Проверить звук — «hola»</button>';
-  h += '<div class="note" id="audio-note" style="display:'+(audioNote?'block':'none')+'">'+esc(audioNote)+'</div>';
-  h += '<button class="btn ghost small" data-reset="'+(state.resetArmed?'2':'1')+'">'
-     + (state.resetArmed ? 'Точно удалить? Нажми ещё раз' : 'Сбросить прогресс') + '</button>';
-  h += '<div class="foot">Прогресс и лучшее время хранятся между запусками</div>';
-  if (!storageOK) h += '<div class="note">Прогресс не сохраняется: хранилище недоступно.</div>';
+  h += '<div class="foot">Прогрес і найкращий час зберігаються між запусками</div>';
+  if (!storageOK) h += '<div class="note">Прогрес не зберігається: сховище недоступне.</div>';
   return h;
 }
 
@@ -447,14 +542,14 @@ function viewLearn(){
   card += '<div class="es">'+esc(it.es)+'</div>'
         + '<div class="tip">['+esc(it.tip)+']</div>'
         + '<div class="ru">'+esc(it.ru)+'</div>'
-        + '<button class="speak" data-say="'+esc(it.es)+'" aria-label="Прослушать">🔊</button>'
+        + '<button class="speak" data-say="'+esc(it.es)+'" aria-label="Прослухати">🔊</button>'
         + '</div>';
   return header(s.title, 'Aprende · '+s.tag, 'home')
-    + '<div class="counter"><span>'+(state.learn+1)+' / '+s.items.length+'</span><span>СЛУШАЙ И ПОВТОРЯЙ</span></div>'
+    + '<div class="counter"><span>'+(state.learn+1)+' / '+s.items.length+'</span><span>СЛУХАЙ І ПОВТОРЮЙ</span></div>'
     + card
-    + '<button class="btn" data-next="1">'+(state.learn+1 < s.items.length ? 'Дальше' : 'Начать практику')+'</button>'
+    + '<button class="btn" data-next="1">'+(state.learn+1 < s.items.length ? 'Далі' : 'Почати практику')+'</button>'
     + (state.learn>0 ? '<button class="btn ghost small" data-prev="1">Назад</button>' : '')
-    + '<button class="btn ghost small" data-skip="1">Сразу к практике</button>';
+    + '<button class="btn ghost small" data-skip="1">Одразу до практики</button>';
 }
 
 function viewQuiz(){
@@ -474,42 +569,42 @@ function viewQuiz(){
   cur.options.forEach((o,i) => { opts += '<button class="opt" data-ans="'+i+'">'+esc(o)+'</button>'; });
   opts += '</div>';
 
-  return header(state.exam ? 'Полный уровень' : s.title, state.exam ? 'Examen · '+lv.title : 'Practica · '+s.tag, 'home')
+  return header(state.exam ? 'Повний рівень' : s.title, state.exam ? 'Examen · '+lv.title : 'Practica · '+s.tag, 'home')
     + m
     + '<div class="qbar"><span>'+(q.idx+1)+' / '+q.questions.length+'</span><span class="clock" id="clock">00:00</span></div>'
     + '<div class="prompt"><div class="ask">'+esc(cur.ask)+'</div>'+cur.view+'</div>'
     + opts
     + '<div class="verdict" id="verdict"></div>'
-    + '<button class="btn ghost small" data-say="'+esc(cur.item.es)+'">🔊 Слушать</button>';
+    + '<button class="btn ghost small" data-say="'+esc(cur.item.es)+'">🔊 Слухати</button>';
 }
 
 function viewResult(){
   const r = state.result;
   const lv = level(state.levelId);
   const s = state.exam ? null : lv.sections.find(x=>x.id===state.sectionId);
-  let h = header(state.exam ? 'Полный уровень' : s.title, 'Resultado', 'home');
+  let h = header(state.exam ? 'Повний рівень' : s.title, 'Resultado', 'home');
   h += '<div class="result">'
      + '<div class="stars-big">'+'★'.repeat(r.stars)+'<span style="color:rgba(237,230,214,.22)">'+'★'.repeat(3-r.stars)+'</span></div>'
      + '<div class="headline">'+(r.stars===3?'¡Perfecto!':r.stars===2?'¡Muy bien!':'¡Otra vez!')+'</div>'
      + '<div class="grid2">'
-     + '<div class="stat"><div class="k">Время</div><div class="v">'+fmt(r.ms)+'</div></div>'
-     + '<div class="stat"><div class="k">Точность</div><div class="v">'+r.acc+'%</div></div>'
-     + '<div class="stat"><div class="k">Лучшее время</div><div class="v'+(r.isBest?' pr':'')+'">'+fmt(r.best)+'</div></div>'
-     + '<div class="stat"><div class="k">Сек / вопрос</div><div class="v">'+(r.ms/1000/r.total).toFixed(1)+'</div></div>'
+     + '<div class="stat"><div class="k">Час</div><div class="v">'+fmt(r.ms)+'</div></div>'
+     + '<div class="stat"><div class="k">Точність</div><div class="v">'+r.acc+'%</div></div>'
+     + '<div class="stat"><div class="k">Найкращий час</div><div class="v'+(r.isBest?' pr':'')+'">'+fmt(r.best)+'</div></div>'
+     + '<div class="stat"><div class="k">Сек / питання</div><div class="v">'+(r.ms/1000/r.total).toFixed(1)+'</div></div>'
      + '</div>';
-  if (r.isBest) h += '<div class="eyebrow" style="margin-top:4px">Новый рекорд</div>';
+  if (r.isBest) h += '<div class="eyebrow" style="margin-top:4px">Новий рекорд</div>';
   if (r.missed.length){
-    h += '<div class="missed"><h4>Повтори это</h4>';
+    h += '<div class="missed"><h4>Повтори це</h4>';
     r.missed.forEach(it => {
       h += '<div class="m"><span><span class="es">'+esc(it.es)+'</span><div class="ru">'+esc(it.ru)+'</div></span>'
-         + '<button data-say="'+esc(it.es)+'" aria-label="Прослушать">🔊</button></div>';
+         + '<button data-say="'+esc(it.es)+'" aria-label="Прослухати">🔊</button></div>';
     });
     h += '</div>';
   }
   h += '</div>';
-  h += '<button class="btn" data-again="1">Пройти снова</button>';
-  if (!state.exam) h += '<button class="btn ghost small" data-relearn="1">Повторить карточки</button>';
-  h += '<button class="btn ghost small" data-go="home">К уровням</button>';
+  h += '<button class="btn" data-again="1">Пройти знову</button>';
+  if (!state.exam) h += '<button class="btn ghost small" data-relearn="1">Повторити картки</button>';
+  h += '<button class="btn ghost small" data-go="home">До рівнів</button>';
   return h;
 }
 
@@ -521,7 +616,7 @@ function render(){
   window.scrollTo(0,0);
 }
 
-/* ---------------- таймер и логика забега ---------------- */
+/* ---------------- таймер і логіка забігу ---------------- */
 let ticker = null;
 function afterQuiz(){
   const q = state.quiz, cur = q.questions[q.idx];
@@ -553,7 +648,7 @@ function answer(i){
   const v = document.getElementById('verdict');
   if (v) v.innerHTML = ok
     ? '¡Correcto! <b>'+esc(cur.item.es)+'</b> — '+esc(cur.item.ru)
-    : 'Верно: <b>'+esc(cur.correct)+'</b> · '+esc(cur.item.es)+' — '+esc(cur.item.ru);
+    : 'Правильно: <b>'+esc(cur.correct)+'</b> · '+esc(cur.item.es)+' — '+esc(cur.item.ru);
   speak(cur.item.es);
 
   setTimeout(() => {
@@ -596,13 +691,15 @@ async function finish(){
   render();
 }
 
-/* ---------------- события ---------------- */
+/* ---------------- події ---------------- */
 app.addEventListener('click', async (e) => {
-  const t = e.target.closest('[data-go],[data-play],[data-exam],[data-audio],[data-say],[data-next],[data-prev],[data-skip],[data-ans],[data-again],[data-relearn],[data-reset]');
+  const t = e.target.closest('[data-go],[data-play],[data-exam],[data-audio],[data-say],[data-next],[data-prev],[data-skip],[data-ans],[data-again],[data-relearn],[data-toggle]');
   if (!t) return;
   const d = t.dataset;
 
   if (d.say){ speak(d.say); return; }
+
+  if (d.toggle){ state.expanded[d.toggle] = !state.expanded[d.toggle]; render(); return; }
 
   if (d.audio){
     progress.audio = !progress.audio;
@@ -612,7 +709,6 @@ app.addEventListener('click', async (e) => {
   }
   if (d.go){ clearInterval(ticker); state.view = d.go; render(); return; }
 
-  if (d.test){ speak('hola'); return; }
   if (d.play){
     const [lid, sid] = d.play.split(':');
     state.levelId = +lid; state.sectionId = sid; state.exam = false; state.learn = 0;
@@ -641,19 +737,13 @@ app.addEventListener('click', async (e) => {
   if (d.ans){ answer(+d.ans); return; }
   if (d.again){ startRun(state.levelId, state.sectionId, state.exam); return; }
   if (d.relearn){ state.learn = 0; state.view = 'learn'; render(); return; }
-  if (d.reset){
-    if (d.reset === '1'){ state.resetArmed = true; render(); return; }
-    state.resetArmed = false;
-    progress.sections = {}; progress.exams = {};
-    await saveProgress(); render(); return;
-  }
 });
 
 /* ---------------- старт ---------------- */
 (async () => { await loadProgress(); render(); })();
 </script>
 <script>
-/* офлайн-режим и установка как приложение */
+/* офлайн-режим і встановлення як застосунку */
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }

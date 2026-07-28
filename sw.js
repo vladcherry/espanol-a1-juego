@@ -1,4 +1,4 @@
-const CACHE = 'azulejo-v1';
+const CACHE = 'azulejo-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -20,7 +20,7 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Кэш сначала, сеть как запас: игра работает без интернета.
+// Кеш спочатку, мережа як запас: гра працює без інтернету.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
