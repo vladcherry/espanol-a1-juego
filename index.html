@@ -112,6 +112,7 @@
   .learn .ru{font-size:16px;color:var(--cal);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
   .learn .swatch{width:76px;height:76px;border-radius:12px;margin:0 auto 18px;border:1px solid rgba(237,230,214,.25)}
   .learn .digit{font-family:var(--display);font-size:74px;line-height:1;color:var(--ocre);margin-bottom:6px}
+  .learn .emoji{font-size:clamp(120px,40vw,160px);line-height:1;margin-bottom:10px}
   .counter{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);letter-spacing:.1em;margin:16px 0 10px}
   .speak{margin:18px auto 0;width:52px;height:52px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:20px}
   .speak:active{background:var(--tile)}
@@ -125,6 +126,7 @@
   .prompt .big.ru{font-family:var(--body);font-weight:700;font-size:clamp(22px,7vw,30px)}
   .prompt .swatch{width:112px;height:112px;border-radius:14px;margin:0 auto;border:1px solid rgba(237,230,214,.25)}
   .prompt .digit{font-family:var(--display);font-size:96px;line-height:1;color:var(--ocre)}
+  .prompt .emoji{font-size:clamp(130px,44vw,180px);line-height:1;margin:0 auto}
   .opts{display:grid;gap:9px}
   .opt{border:1px solid var(--line);border-radius:12px;padding:15px;font-size:16.5px;text-align:left;background:rgba(31,61,114,.22);transition:background .15s,border-color .15s}
   .opt:active{background:var(--tile-2)}
@@ -358,6 +360,37 @@ const LEVELS = [
   }
 ];
 
+/* Емодзі-картинки до слів (ключ — поле es). Кольори й цифри вже мають власний
+   візуал, тому тут їх немає. У межах розділу емодзі унікальні — інакше в режимі
+   «вгадай за картинкою» була б підказка з двома правильними відповідями. */
+const EMOJI = {
+  // saludos
+  'hola':'👋','buenos días':'🌅','buenas tardes':'☀️','buenas noches':'🌙',
+  'adiós':'🚶','¿cómo te llamas?':'🏷️','me llamo Ana':'📛','mucho gusto':'🤝',
+  // frases
+  'por favor':'🥺','gracias':'🙏','de nada':'😊','sí':'✅','no':'❌',
+  '¿cómo estás?':'🤔','muy bien':'👍','lo siento':'😔','hasta luego':'👋','¡salud!':'🥂',
+  // bebidas
+  'agua':'💧','cerveza':'🍺','café':'☕','té':'🍵','leche':'🥛','zumo':'🧃',
+  'limonada':'🍋','licuado':'🥤','chocolate caliente':'🍫','refresco':'🥫','cóctel':'🍸','vino':'🍷',
+  // comida
+  'tacos':'🌮','sándwich':'🥪','bocadillo':'🥖','perrito caliente':'🌭','sopa':'🍲','pasta':'🍝',
+  'salchichas':'🍖','patatas fritas':'🍟','pescado':'🐟','pan':'🍞','pizza':'🍕',
+  'huevos':'🥚','carne':'🥩','chips':'🥔','queso':'🧀','pollo':'🍗','ensalada':'🥗',
+  'palomitas':'🍿','sushi':'🍣','hamburguesa':'🍔','pinchito':'🍢','cruasán':'🥐','paella':'🥘','barra de pan':'🥖',
+  // postres
+  'tarta':'🍰','chocolate':'🍫','galletas':'🍪','churro':'🍩','gelatina':'🍮','merengue':'🍦',
+  // verbos
+  'Yo corro':'🏃','Yo como':'🍽️','Yo duermo':'😴','Yo leo':'📖','Yo estudio':'📚','Yo trabajo':'💼',
+  'Yo viajo':'✈️','Yo bailo':'💃','Yo canto':'🎤','Yo camino':'🚶','Yo hablo':'🗣️','Yo escucho':'👂',
+  'Yo veo':'👀','Yo escribo':'✍️','Yo conduzco':'🚗','Yo nado':'🏊','Yo juego':'🎮','Yo cocino':'👨‍🍳',
+  'Yo dibujo':'✏️','Yo pinto':'🎨','Yo espero':'⏳','Yo ayudo':'🤝','Yo amo':'❤️','Yo odio':'😡'
+};
+LEVELS.forEach(l => l.sections.forEach(s => {
+  s.items.forEach(it => { if (EMOJI[it.es]) it.img = EMOJI[it.es]; });
+  if (s.items.length && s.items.every(it => it.img) && !s.modes.includes('img')) s.modes.push('img');
+}));
+
 const KEY = 'azulejo:progress:v1';
 const PER_Q_TARGET = 4200;   // мс на питання для трьох плиток
 const EXAM_SIZE = 16;
@@ -487,6 +520,10 @@ function makeQuestion(item, pool, modes){
     ask = 'Назви число';
     view = '<div class="digit">'+esc(item.digit)+'</div>';
     options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
+  } else if (mode === 'img'){
+    ask = 'Що на картинці?';
+    view = '<div class="emoji">'+esc(item.img)+'</div>';
+    options = shuffle([item, ...others]).map(x=>x.es); correct = item.es;
   } else if (mode === 'audio_digit'){
     ask = 'Слухай і вибери цифру';
     view = '<button class="speak" style="margin:6px auto 0" data-say="'+esc(item.es)+'" aria-label="Прослухати">🔊</button>';
@@ -584,6 +621,7 @@ function viewLearn(){
   let card = '<div class="learn">';
   if (it.color) card += '<div class="swatch" style="background:'+it.color+'"></div>';
   if (it.digit) card += '<div class="digit">'+esc(it.digit)+'</div>';
+  if (it.img && !it.color && !it.digit) card += '<div class="emoji">'+esc(it.img)+'</div>';
   card += '<div class="es">'+esc(it.es)+'</div>'
         + '<div class="tip">['+esc(it.tip)+']</div>'
         + '<div class="ru">'+esc(it.ru)+'</div>'
