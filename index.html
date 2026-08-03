@@ -153,6 +153,18 @@
   .missed .m button{margin-left:auto;width:34px;height:34px;border:1px solid var(--line);border-radius:9px;flex:0 0 auto}
   .foot{margin-top:26px;font-size:11.5px;color:rgba(237,230,214,.4);text-align:center;letter-spacing:.06em}
   .note{font-size:12px;color:var(--carmin);text-align:center;margin-top:12px}
+  .learn a{color:var(--ocre)}
+  .field{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:rgba(31,61,114,.22);color:var(--cal);font-size:15px;font-family:inherit}
+  .field:focus{outline:2px solid var(--ocre);outline-offset:1px}
+  .revlist{margin:6px 0 4px}
+  .revrow{display:flex;align-items:center;gap:12px;padding:11px 2px;border-top:1px solid var(--line);cursor:pointer}
+  .revrow input{width:22px;height:22px;flex:0 0 auto;accent-color:var(--ocre)}
+  .revemoji{font-size:30px;line-height:1;flex:0 0 auto;width:36px;text-align:center}
+  .revtx{display:flex;flex-direction:column;min-width:0}
+  .revtx .es{font-weight:700;font-size:15.5px}
+  .revtx .ru{color:var(--muted);font-size:13px}
+  @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+  .scan-pulse{animation:pulse 1.2s ease-in-out infinite}
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
   button:focus-visible,.row:focus-visible{outline:2px solid var(--ocre);outline-offset:2px}
 </style>
@@ -162,11 +174,13 @@
 
 <script>
 /* =========================================================
-   AZULEJO · Español A1 — Nivel 1
-   Нові рівні додаються одним об'єктом у масив LEVELS.
+   AZULEJO · Español A1
+   SEED — вбудований («дефолтний») словник. На старті він клонується
+   в LEVELS зі сховища; далі всі слова живуть у локальному словнику
+   (ключ azulejo:dict:v1), а не в коді. Камера+Gemini додають нові.
    ========================================================= */
 
-const LEVELS = [
+const SEED = [
   {
     id: 1,
     tag: 'Nivel A1 · Lección 1',
@@ -386,17 +400,23 @@ const EMOJI = {
   'Yo veo':'👀','Yo escribo':'✍️','Yo conduzco':'🚗','Yo nado':'🏊','Yo juego':'🎮','Yo cocino':'👨‍🍳',
   'Yo dibujo':'✏️','Yo pinto':'🎨','Yo espero':'⏳','Yo ayudo':'🤝','Yo amo':'❤️','Yo odio':'😡'
 };
-LEVELS.forEach(l => l.sections.forEach(s => {
+SEED.forEach(l => l.sections.forEach(s => {
   s.items.forEach(it => { if (EMOJI[it.es]) it.img = EMOJI[it.es]; });
   if (s.items.length && s.items.every(it => it.img) && !s.modes.includes('img')) s.modes.push('img');
 }));
 
 const KEY = 'azulejo:progress:v1';
+const DICT_KEY = 'azulejo:dict:v1';
+const SETTINGS_KEY = 'azulejo:settings:v1';
+const GEMINI_MODEL = 'gemini-flash-lite-latest';
 const PER_Q_TARGET = 4200;   // мс на питання для трьох плиток
 const EXAM_SIZE = 16;
+const clone = x => JSON.parse(JSON.stringify(x));
 
+let LEVELS = [];
 let progress = { v:1, audio:true, sections:{}, exams:{} };
-let state = { view:'home', levelId:1, sectionId:null, exam:false, learn:0, quiz:null, expanded:{} };
+let settings = { geminiKey:'' };
+let state = { view:'home', levelId:1, sectionId:null, exam:false, learn:0, quiz:null, expanded:{}, pendingImg:null, scan:null, scanErr:null, keyReturn:null };
 let storageOK = true;
 
 /* ---------------- зберігання ---------------- */
@@ -420,6 +440,55 @@ async function loadProgress(){
 }
 async function saveProgress(){
   try{ await box.set(KEY, JSON.stringify(progress)); }
+  catch(e){ storageOK = false; }
+}
+
+/* ---------------- локальний словник ---------------- */
+async function loadDict(){
+  try{
+    const r = await box.get(DICT_KEY);
+    if (r && r.value){
+      LEVELS = JSON.parse(r.value);
+      // домержити нові вбудовані рівні, яких ще немає у збереженому словнику
+      SEED.forEach(sl => { if (!LEVELS.some(l => l.id === sl.id)) LEVELS.push(clone(sl)); });
+    } else {
+      LEVELS = clone(SEED);               // перший запуск — дефолтний словник із наявних слів
+    }
+  }catch(e){ LEVELS = clone(SEED); }
+  ensureMyDict();
+  await saveDict();
+}
+async function saveDict(){
+  try{ await box.set(DICT_KEY, JSON.stringify(LEVELS)); }
+  catch(e){ storageOK = false; }
+}
+function ensureMyDict(){
+  if (!LEVELS.some(l => l.my)){
+    LEVELS.push({ id:100, my:true, tag:'Mi diccionario', title:'Мій словник',
+      note:'Слова, додані з фото через Gemini.', unlocked:true,
+      sections:[{ id:'mis', title:'Мої слова', tag:'Mi diccionario', modes:['es_ru','ru_es','audio_es'], items:[] }] });
+  }
+}
+function dictLevel(){ return LEVELS.find(l => l.my); }
+function addToDict(items){
+  const sec = dictLevel().sections[0];
+  const have = new Set(sec.items.map(i => i.es.toLowerCase()));
+  let added = 0;
+  items.forEach(it => {
+    if (it && it.es && !have.has(it.es.toLowerCase())){ sec.items.push(it); have.add(it.es.toLowerCase()); added++; }
+  });
+  sec.modes = ['es_ru','ru_es','audio_es'];
+  if (sec.items.length && sec.items.every(i => i.img)) sec.modes.push('img');
+  return added;
+}
+
+/* ---------------- налаштування ---------------- */
+async function loadSettings(){
+  try{ const r = await box.get(SETTINGS_KEY); if (r && r.value) settings = Object.assign(settings, JSON.parse(r.value)); }
+  catch(e){ /* норма */ }
+}
+async function saveSettings(){
+  try{ await box.set(SETTINGS_KEY, JSON.stringify(settings)); }
   catch(e){ storageOK = false; }
 }
 
@@ -500,7 +569,9 @@ function levelAvgStars(lv){
 
 /* ---------------- складання питань ---------------- */
 function makeQuestion(item, pool, modes){
-  const mode = modes[Math.floor(Math.random()*modes.length)];
+  let mode = modes[Math.floor(Math.random()*modes.length)];
+  // якщо слову бракує поля для цього режиму — показуємо текст
+  if ((mode==='img'&&!item.img)||(mode==='swatch'&&!item.color)||((mode==='digit'||mode==='audio_digit')&&!item.digit)) mode='es_ru';
   const others = shuffle(pool.filter(x => x.es !== item.es)).slice(0,3);
   let ask, view, options, correct;
 
@@ -568,6 +639,8 @@ function viewHome(){
   let h = '<div class="hero"><div class="word w1">Azulejo</div><div class="word w2">Español</div>'
         + '<p>Іспанська з нуля — плитка за плиткою. Відповідай швидко: час кожного забігу зберігається.</p></div>';
   h += '<div class="rule"></div>';
+  h += '<button class="btn" data-cam="1">📷 Додати слова з фото</button>';
+  h += '<div class="rule"></div>';
 
   LEVELS.forEach(lv => {
     if (!lv.unlocked){
@@ -592,6 +665,12 @@ function viewHome(){
     h += '<div class="meta" style="margin-bottom:6px">'+esc(lv.note)+'</div>';
     lv.sections.forEach((s,i) => {
       const r = recSection(lv.id, s.id);
+      if (lv.my && s.items.length < 4){
+        h += '<div class="row" style="opacity:.6"><span class="num">0'+(i+1)+'</span>'
+           + '<span><span class="name">'+esc(s.title)+'</span>'
+           + '<span class="sub">'+s.items.length+' СЛІВ · ПОТРІБНО ЩОНАЙМЕНШЕ 4</span></span></div>';
+        return;
+      }
       h += '<button class="row" data-play="'+lv.id+':'+s.id+'">'
          + '<span class="num">0'+(i+1)+'</span>'
          + '<span><span class="name">'+esc(s.title)+'</span>'
@@ -599,18 +678,21 @@ function viewHome(){
          + '<span class="right">'+(r ? stars(r.stars)+'<div class="time">'+fmt(r.best)+'</div>'
                                      : '<div class="time none">—:—</div>')+'</span></button>';
     });
-    const ex = recExam(lv.id), open = sectionsDone(lv);
-    h += '<button class="row'+(open?'':' locked')+'" data-exam="'+lv.id+'">'
-       + '<span class="num">★</span>'
-       + '<span><span class="name">Повний рівень</span><span class="sub">'
-       + (open ? EXAM_SIZE+' ПИТАНЬ УПЕРЕМІШ' : 'ПРОЙДИ ВСІ РОЗДІЛИ')+'</span></span>'
-       + '<span class="right">'+(ex ? stars(ex.stars)+'<div class="time">'+fmt(ex.best)+'</div>'
-                                    : '<div class="time none">—:—</div>')+'</span></button>';
+    if (!lv.my){
+      const ex = recExam(lv.id), open = sectionsDone(lv);
+      h += '<button class="row'+(open?'':' locked')+'" data-exam="'+lv.id+'">'
+         + '<span class="num">★</span>'
+         + '<span><span class="name">Повний рівень</span><span class="sub">'
+         + (open ? EXAM_SIZE+' ПИТАНЬ УПЕРЕМІШ' : 'ПРОЙДИ ВСІ РОЗДІЛИ')+'</span></span>'
+         + '<span class="right">'+(ex ? stars(ex.stars)+'<div class="time">'+fmt(ex.best)+'</div>'
+                                      : '<div class="time none">—:—</div>')+'</span></button>';
+    }
     h += '</div>';
   });
 
-  h += '<div class="foot">Прогрес і найкращий час зберігаються між запусками</div>';
-  if (!storageOK) h += '<div class="note">Прогрес не зберігається: сховище недоступне.</div>';
+  h += '<button class="btn ghost small" data-apikey="1">⚙ Gemini API-ключ'+(settings.geminiKey?' ✓':'')+'</button>';
+  h += '<div class="foot">Прогрес, словник і ключ зберігаються між запусками</div>';
+  if (!storageOK) h += '<div class="note">Дані не зберігаються: сховище недоступне.</div>';
   return h;
 }
 
@@ -623,7 +705,7 @@ function viewLearn(){
   if (it.digit) card += '<div class="digit">'+esc(it.digit)+'</div>';
   if (it.img && !it.color && !it.digit) card += '<div class="emoji">'+esc(it.img)+'</div>';
   card += '<div class="es">'+esc(it.es)+'</div>'
-        + '<div class="tip">['+esc(it.tip)+']</div>'
+        + (it.tip ? '<div class="tip">['+esc(it.tip)+']</div>' : '')
         + '<div class="ru">'+esc(it.ru)+'</div>'
         + '<button class="speak" data-say="'+esc(it.es)+'" aria-label="Прослухати">🔊</button>'
         + '</div>';
@@ -691,11 +773,139 @@ function viewResult(){
   return h;
 }
 
+/* ---------------- камера + Gemini ---------------- */
+function viewApiKey(){
+  let h = header('Gemini API-ключ', 'Configuración', 'home');
+  h += '<div class="learn" style="text-align:left">'
+     + '<p style="margin:0 0 10px;font-size:14px;line-height:1.5">Щоб розпізнавати слова з фото, потрібен безкоштовний ключ Google Gemini:</p>'
+     + '<ol style="margin:0 0 14px 18px;padding:0;font-size:14px;line-height:1.7">'
+     + '<li>Відкрий <a href="https://aistudio.google.com/api-keys" target="_blank" rel="noopener">Google AI Studio</a></li>'
+     + '<li>Натисни «Create API key» і скопіюй ключ</li>'
+     + '<li>Встав його в поле нижче</li></ol>'
+     + '<input id="keyinput" class="field" type="password" autocomplete="off" placeholder="AIza…" value="'+esc(settings.geminiKey||'')+'">'
+     + '<p style="margin:12px 0 0;font-size:11.5px;color:var(--muted)">Ключ зберігається лише на цьому пристрої. Фото надсилається в Google тільки коли ти робиш знімок.</p>'
+     + '</div>';
+  h += '<button class="btn" data-savekey="1">Зберегти ключ</button>';
+  h += '<button class="btn ghost small" data-go="home">Назад</button>';
+  return h;
+}
+function viewScan(){
+  return header('Розпізнавання', 'Gemini', 'home')
+    + '<div class="learn"><div class="emoji scan-pulse">🔎</div>'
+    + '<div class="es">Розпізнаю слова…</div>'
+    + '<div class="tip">зачекай кілька секунд</div></div>';
+}
+function viewReview(){
+  let h = header('Нові слова', 'Escanear · foto', 'home');
+  if (state.scanErr){
+    h += '<div class="note" style="margin-top:22px">'+esc(state.scanErr)+'</div>';
+    h += '<button class="btn" data-cam="1">📷 Спробувати ще раз</button>';
+    h += '<button class="btn ghost small" data-apikey="1">Змінити API-ключ</button>';
+    h += '<button class="btn ghost small" data-go="home">Назад</button>';
+    return h;
+  }
+  const list = state.scan || [];
+  if (!list.length){
+    h += '<div class="note" style="margin-top:22px">Не вдалося розпізнати слова. Спробуй чіткіше фото.</div>';
+    h += '<button class="btn" data-cam="1">📷 Ще раз</button>';
+    h += '<button class="btn ghost small" data-go="home">Назад</button>';
+    return h;
+  }
+  h += '<div class="counter"><span>Знайдено: '+list.length+'</span><span>ЗНІМИ ЗАЙВЕ</span></div>';
+  h += '<div class="revlist">';
+  list.forEach((it,i) => {
+    h += '<label class="revrow">'
+       + '<input type="checkbox" class="rev-chk" data-i="'+i+'" checked>'
+       + '<span class="revemoji">'+esc(it.img||'📝')+'</span>'
+       + '<span class="revtx"><span class="es">'+esc(it.es)+'</span>'
+       + '<span class="ru">'+esc(it.ru)+(it.tip?' · ['+esc(it.tip)+']':'')+'</span></span>'
+       + '</label>';
+  });
+  h += '</div>';
+  h += '<button class="btn" data-review-add="1">Додати обрані</button>';
+  h += '<button class="btn ghost small" data-go="home">Скасувати</button>';
+  return h;
+}
+
+async function geminiExtract(img){
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + GEMINI_MODEL
+            + ':generateContent?key=' + encodeURIComponent(settings.geminiKey);
+  const prompt = 'Ти допомагаєш вивчати іспанську (рівень A1) україномовному учневі. '
+    + 'На зображенні може бути словниковий аркуш або реальна сцена чи предмети. '
+    + 'Визнач корисні іспанські слова або короткі фрази. Для кожного поверни поля: '
+    + 'es — слово або фраза іспанською (для іменників з артиклем el/la, якщо доречно); '
+    + 'uk — переклад українською; '
+    + 'tip — вимову українськими літерами з наголосом (напр. "о́ла"); '
+    + 'emoji — один доречний емодзі. '
+    + 'Максимум 30 елементів, без повторів. Тільки реальні іспанські слова.';
+  const body = {
+    contents: [{ parts: [ { text: prompt }, { inline_data: { mime_type: img.mime, data: img.data } } ] }],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: { type:'ARRAY', items: { type:'OBJECT',
+        properties: { es:{type:'STRING'}, uk:{type:'STRING'}, tip:{type:'STRING'}, emoji:{type:'STRING'} },
+        required: ['es','uk'] } }
+    }
+  };
+  let res;
+  try{
+    res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  }catch(e){ throw new Error('Немає зв’язку з Gemini. Перевір інтернет.'); }
+  if (!res.ok){
+    if (res.status===400 || res.status===403) throw new Error('Ключ недійсний або немає доступу. Перевір API-ключ.');
+    if (res.status===429) throw new Error('Забагато запитів до Gemini. Спробуй трохи згодом.');
+    throw new Error('Помилка Gemini (' + res.status + '). Спробуй ще раз.');
+  }
+  const data = await res.json();
+  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content
+            && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
+            && data.candidates[0].content.parts[0].text;
+  if (!text) throw new Error('Порожня відповідь від Gemini.');
+  let arr;
+  try{ arr = JSON.parse(text); }catch(e){ throw new Error('Не вдалося прочитати відповідь Gemini.'); }
+  if (!Array.isArray(arr)) throw new Error('Несподівана відповідь Gemini.');
+  return arr.filter(x => x && x.es && x.uk).map(x => ({
+    es: String(x.es).trim(), ru: String(x.uk).trim(),
+    tip: (x.tip||'').trim(), img: (x.emoji||'').trim()
+  }));
+}
+async function startScan(){
+  state.scanErr = null; state.scan = null; state.view = 'scan'; render();
+  try{
+    state.scan = await geminiExtract(state.pendingImg);
+  }catch(err){
+    state.scanErr = err.message || 'Не вдалося розпізнати.';
+  }
+  state.view = 'review'; render();
+}
+function setupCamera(){
+  if (document.getElementById('camfile')) return;
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*'; inp.setAttribute('capture', 'environment');
+  inp.id = 'camfile'; inp.style.display = 'none';
+  document.body.appendChild(inp);
+  inp.addEventListener('change', () => {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const url = String(reader.result);
+      state.pendingImg = { mime: f.type || 'image/jpeg', data: url.slice(url.indexOf(',') + 1) };
+      if (!settings.geminiKey){ state.keyReturn = 'scan'; state.view = 'apikey'; render(); }
+      else await startScan();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
 function render(){
   if (state.view === 'home') app.innerHTML = viewHome();
   else if (state.view === 'learn') app.innerHTML = viewLearn();
   else if (state.view === 'quiz'){ app.innerHTML = viewQuiz(); afterQuiz(); }
   else if (state.view === 'result') app.innerHTML = viewResult();
+  else if (state.view === 'apikey') app.innerHTML = viewApiKey();
+  else if (state.view === 'scan') app.innerHTML = viewScan();
+  else if (state.view === 'review') app.innerHTML = viewReview();
   window.scrollTo(0,0);
 }
 
@@ -776,13 +986,31 @@ async function finish(){
 
 /* ---------------- події ---------------- */
 app.addEventListener('click', async (e) => {
-  const t = e.target.closest('[data-go],[data-play],[data-exam],[data-audio],[data-say],[data-next],[data-prev],[data-skip],[data-ans],[data-again],[data-relearn],[data-toggle]');
+  const t = e.target.closest('[data-go],[data-play],[data-exam],[data-audio],[data-say],[data-next],[data-prev],[data-skip],[data-ans],[data-again],[data-relearn],[data-toggle],[data-cam],[data-apikey],[data-savekey],[data-review-add]');
   if (!t) return;
   const d = t.dataset;
 
   if (d.say){ speak(d.say); return; }
 
   if (d.toggle){ state.expanded[d.toggle] = !state.expanded[d.toggle]; render(); return; }
+
+  if (d.cam){ state.scanErr = null; const f = document.getElementById('camfile'); if (f){ f.value = ''; f.click(); } return; }
+  if (d.apikey){ state.keyReturn = null; state.view = 'apikey'; render(); return; }
+  if (d.savekey){
+    const inp = document.getElementById('keyinput');
+    settings.geminiKey = inp ? inp.value.trim() : '';
+    await saveSettings();
+    if (state.keyReturn === 'scan' && state.pendingImg){ state.keyReturn = null; await startScan(); }
+    else { state.view = 'home'; render(); }
+    return;
+  }
+  if (d.reviewAdd){
+    const chosen = [...document.querySelectorAll('.rev-chk')].filter(c => c.checked).map(c => state.scan[+c.dataset.i]);
+    addToDict(chosen); await saveDict();
+    state.scan = null; state.pendingImg = null; state.scanErr = null;
+    state.view = 'home'; render();
+    return;
+  }
 
   if (d.audio){
     progress.audio = !progress.audio;
@@ -823,7 +1051,13 @@ app.addEventListener('click', async (e) => {
 });
 
 /* ---------------- старт ---------------- */
-(async () => { await loadProgress(); render(); })();
+(async () => {
+  await loadProgress();
+  await loadSettings();
+  await loadDict();
+  setupCamera();
+  render();
+})();
 </script>
 <script>
 /* офлайн-режим і встановлення як застосунку */
