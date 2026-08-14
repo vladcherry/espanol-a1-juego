@@ -165,6 +165,33 @@
   .revtx .ru{color:var(--muted);font-size:13px}
   @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
   .scan-pulse{animation:pulse 1.2s ease-in-out infinite}
+
+  /* ---------- метод «Детектива» ---------- */
+  .expediente{border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0;
+    background:repeating-linear-gradient(135deg,rgba(232,163,61,.05) 0 10px,transparent 10px 20px)}
+  .expediente .stamp{font-family:var(--display);font-size:12px;letter-spacing:.22em;color:var(--ocre);text-transform:uppercase}
+  .expediente .place{font-size:13px;color:var(--muted);margin-top:6px}
+  .expediente .brief{font-size:14px;line-height:1.5;margin-top:8px}
+  .phases{display:flex;gap:6px;margin:14px 0 4px}
+  .phases i{flex:1;height:3px;border-radius:2px;background:var(--tile);font-style:normal}
+  .phases i.on{background:var(--ocre)}
+  .dlg{margin:10px 0 4px}
+  .dlg .ln{padding:9px 0;border-top:1px solid var(--line);font-size:15.5px;line-height:1.65}
+  .dlg .who{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+  .clue{border-bottom:1px dashed rgba(232,163,61,.75);padding:1px 0;cursor:pointer}
+  .clue .cn{font-size:10px;vertical-align:super;color:var(--ocre);margin-right:2px;font-weight:700}
+  .clue.mark{background:rgba(232,163,61,.24);border-radius:3px;box-shadow:0 0 0 3px rgba(232,163,61,.24)}
+  .keyrow{display:flex;gap:11px;padding:11px 2px;border-top:1px solid var(--line)}
+  .keyrow.mine{background:rgba(232,163,61,.09)}
+  .keyrow .kn{flex:0 0 auto;width:22px;font-family:var(--display);color:var(--ocre);font-size:15px}
+  .keyrow .kt{min-width:0;flex:1}
+  .keyrow .kt .es{font-weight:700;font-size:15px}
+  .keyrow .kt .tip{color:var(--ocre);font-size:12.5px}
+  .keyrow .kt .ru{color:var(--muted);font-size:13.5px}
+  .keyrow button{flex:0 0 auto;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);font-size:14px}
+  .hunch{border-left:3px solid var(--ocre);padding:10px 12px;margin:14px 0;background:rgba(31,61,114,.3);
+    border-radius:0 8px 8px 0;font-size:14px;line-height:1.55}
+  .hunch b{color:var(--ocre)}
   @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
   button:focus-visible,.row:focus-visible{outline:2px solid var(--ocre);outline-offset:2px}
 </style>
@@ -610,18 +637,256 @@ SEED.forEach(l => l.sections.forEach(s => {
   if (s.items.length && s.items.every(it => it.img) && !s.modes.includes('img')) s.modes.push('img');
 }));
 
+/* ---------------- метод «Детектива» (Reverse Learning) ----------------
+   Справа = діалог із пронумерованими уликами. Спершу читаєш без словника,
+   потім позначаєш незрозуміле, і лише тоді відкриваєш ключ розшифровки.
+   У тексті репліки {n} — посилання на улику з масиву clues (нумерація з 1,
+   у порядку появи). Справи живуть у коді, а не в словнику користувача. */
+const CASOS = {
+  4: {
+    code: 'Caso #01', title: 'Expediente Contacto',
+    place: 'Коворкінг, Барселона · 19:00',
+    brief: 'Нетворкінг-вечір. До тебе підходять знайомитися — розбери розмову без словника.',
+    note: 'Знайомлячись, іспанці кажуть Encantado (чоловік) або Encantada (жінка) — коротке «радий/рада познайомитися».',
+    lines: [
+      { w:'Persona A', t:'¡Hola! {1} Me llamo Vladimir. {2}' },
+      { w:'Persona B', t:'Hola, soy Sofía. Encantada. {3}' },
+      { w:'Persona A', t:'{4}, pero {5}.' },
+      { w:'Persona B', t:'¡Qué bien! Tu español es muy bueno. {6}' },
+      { w:'Persona A', t:'{7}. ¿Y tú?' },
+      { w:'Persona B', t:'Yo soy diseñadora gráfica. {8}' },
+      { w:'Persona A', t:'Me encanta. {9}, ¿verdad?' },
+      { w:'Persona B', t:'Sí, el clima aquí es maravilloso. {10}' },
+      { w:'Persona A', t:'Monto en bici y viajo. {11}' },
+      { w:'Persona B', t:'La fotografía y la música electrónica. {12}' },
+      { w:'Persona A', t:'Inglés y un poco de francés. {13}.' },
+      { w:'Persona B', t:'¡Lo haces muy bien! Se entiende todo.' },
+      { w:'Persona A', t:'Gracias. {14}' },
+      { w:'Persona B', t:'¡Claro que sí! Me encantaría. {15}.' },
+      { w:'Persona A', t:'Igualmente. {16}' }
+    ],
+    clues: [
+      { es:'Mucho gusto.',                    ru:'дуже приємно',                     tip:'му́чо ґу́сто' },
+      { es:'¿Cómo te llamas?',                ru:'як тебе звати?',                   tip:'ко́мо те я́мас' },
+      { es:'¿De dónde eres?',                 ru:'звідки ти?',                       tip:'де до́нде е́рес' },
+      { es:'Soy de Ucrania',                  ru:'я з України',                      tip:'сой де укра́нья' },
+      { es:'vivo en España desde hace un año', ru:'живу в Іспанії вже рік',          tip:'ві́во ен еспа́нья де́сде а́се ун а́ньйо' },
+      { es:'¿A qué te dedicas?',              ru:'чим ти займаєшся?',                tip:'а ке те деді́кас' },
+      { es:'Soy ingeniero de software',       ru:'я інженер-програміст',             tip:'сой інхенье́ро де со́фтвер' },
+      { es:'¿Te gusta vivir aquí?',           ru:'тобі подобається тут жити?',       tip:'те ґу́ста віві́р акі́' },
+      { es:'Hace un tiempo fantástico hoy',   ru:'сьогодні чудова погода',           tip:'а́се ун тье́мпо фанта́стіко ой' },
+      { es:'¿Qué haces en tu tiempo libre?',  ru:'що робиш у вільний час?',          tip:'ке а́сес ен ту тье́мпо лі́бре' },
+      { es:'¿Tienes algún hobby?',            ru:'маєш якесь хобі?',                 tip:'тье́нес альґу́н хо́бі' },
+      { es:'¿Hablas otros idiomas?',          ru:'говориш іншими мовами?',           tip:'а́блас о́трос ідьйо́мас' },
+      { es:'Me cuesta hablar con fluidez',    ru:'мені важко говорити вільно',       tip:'ме куе́ста абла́р кон флуіде́с' },
+      { es:'¿Te apetece tomar un café?',      ru:'хочеш випити кави?',               tip:'те апете́се тома́р ун кафе́' },
+      { es:'Fue un placer conocerte',         ru:'було приємно познайомитися',       tip:'фуе ун пласе́р коносе́рте' },
+      { es:'¡Cuídate!',                       ru:'бережи себе!',                     tip:'куі́дате' }
+    ]
+  },
+  5: {
+    code: 'Caso #02', title: 'Operación Escaparate',
+    place: 'Магазин одягу, Валенсія · 17:00',
+    brief: 'Ти міряєш сорочку й доходиш до каси. Що саме питає продавчиня?',
+    note: 'Конструкція «me queda…» описує, як сидить одяг: me queda bien (гарно сидить), me queda pequeño (замалий). Розмір одягу — talla, розмір взуття — número.',
+    lines: [
+      { w:'Dependienta', t:'Buenas tardes. {1}' },
+      { w:'Cliente', t:'{2}.' },
+      { w:'Cliente', t:'Perdone, {3}' },
+      { w:'Dependienta', t:'Veinticinco euros.' },
+      { w:'Cliente', t:'{4}' },
+      { w:'Dependienta', t:'Sí, tiene un veinte por ciento de descuento.' },
+      { w:'Cliente', t:'Genial. {5}' },
+      { w:'Dependienta', t:'Sí, aquí tiene la talla L.' },
+      { w:'Cliente', t:'{6}' },
+      { w:'Dependienta', t:'Al fondo, a la izquierda.' },
+      { w:'Cliente', t:'(sale del probador) {7}. ¿Tiene la XL?' },
+      { w:'Dependienta', t:'Sí, un momento… Aquí está.' },
+      { w:'Cliente', t:'Perfecto, {8}.' },
+      { w:'Dependienta', t:'Muy bien, pase por caja.' },
+      { w:'Cliente', t:'{9}' },
+      { w:'Dependienta', t:'Sí, claro.' },
+      { w:'Cliente', t:'{10} Y {11}' },
+      { w:'Dependienta', t:'Aquí tiene todo.' },
+      { w:'Cliente', t:'{12}' },
+      { w:'Dependienta', t:'Sí, {13}.' },
+      { w:'Cliente', t:'Una cosa más: busco zapatos.' },
+      { w:'Dependienta', t:'{14}.' },
+      { w:'Cliente', t:'{15}' },
+      { w:'Dependienta', t:'Hasta las nueve.' },
+      { w:'Cliente', t:'{16}.' }
+    ],
+    clues: [
+      { es:'¿Le puedo ayudar en algo?',       ru:'можу вам чимось допомогти?',       tip:'ле пуе́до аюда́р ен а́льґо' },
+      { es:'Solo estoy mirando, gracias',     ru:'я лише дивлюся, дякую',            tip:'со́ло есто́й мира́ндо ґра́сіас' },
+      { es:'¿Cuánto cuesta esta camisa?',     ru:'скільки коштує ця сорочка?',       tip:'куа́нто куе́ста е́ста камі́са' },
+      { es:'¿Está de oferta?',                ru:'це за акцією?',                    tip:'еста́ де офе́рта' },
+      { es:'¿Tiene una talla más grande?',    ru:'є більший розмір?',                tip:'тье́не у́на та́йя мас ґра́нде' },
+      { es:'¿Dónde están los probadores?',    ru:'де примірочні?',                   tip:'до́нде еста́н лос пробадо́рес' },
+      { es:'Me queda pequeño',                ru:'він мені замалий',                 tip:'ме ке́да пеке́ньйо' },
+      { es:'me lo llevo',                     ru:'я це беру',                        tip:'ме ло йе́во' },
+      { es:'¿Aceptan tarjeta?',               ru:'приймаєте картку?',                tip:'асе́птан тархе́та' },
+      { es:'¿Me da una bolsa, por favor?',    ru:'дасте пакет, будь ласка?',         tip:'ме да у́на бо́льса пор фаво́р' },
+      { es:'¿me da el recibo?',               ru:'дасте чек?',                       tip:'ме да ель ресі́бо' },
+      { es:'¿Puedo devolverlo si no me sirve?', ru:'чи можу повернути, якщо не підійде?', tip:'пуе́до девольве́рло сі но ме сі́рве' },
+      { es:'tiene treinta días para el cambio', ru:'маєте тридцять днів на обмін',   tip:'тье́не тре́йнта ді́ас па́ра ель ка́мбьо' },
+      { es:'Está en la segunda planta',       ru:'це на другому поверсі',            tip:'еста́ ен ла сеґу́нда пла́нта' },
+      { es:'¿Hasta qué hora abren?',          ru:'до котрої ви працюєте?',           tip:'а́ста ке о́ра а́брен' },
+      { es:'Gracias, muy amable',             ru:'дякую, дуже люб’язно',             tip:'ґра́сіас муй ама́бле' }
+    ]
+  },
+  6: {
+    code: 'Caso #03', title: 'Expediente Cuenta',
+    place: 'Відділення банку, Мадрид · 10:00',
+    brief: 'Відкриття рахунку — і кілька проблем із карткою на додачу.',
+    note: '«Domiciliar la nómina» — прив’язати зарплату до рахунку. Саме за це іспанські банки скасовують комісії, тож це слово чути в кожному відділенні.',
+    lines: [
+      { w:'Cliente', t:'Buenos días. {1}' },
+      { w:'Empleado', t:'Muy bien. {2}' },
+      { w:'Cliente', t:'Sí, a las diez. {3}' },
+      { w:'Empleado', t:'{4}.' },
+      { w:'Cliente', t:'Aquí los tiene. {5}' },
+      { w:'Empleado', t:'{6}.' },
+      { w:'Cliente', t:'Perfecto, la tengo.' },
+      { w:'Empleado', t:'{7}' },
+      { w:'Cliente', t:'Ya está. {8}' },
+      { w:'Empleado', t:'{9}, en unos siete días.' },
+      { w:'Cliente', t:'{10}' },
+      { w:'Empleado', t:'{11}' },
+      { w:'Cliente', t:'Lo tengo en el móvil. {12}' },
+      { w:'Empleado', t:'Un día laborable.' },
+      { w:'Cliente', t:'Otra cosa: {13}.' },
+      { w:'Empleado', t:'¿Qué ocurre exactamente?' },
+      { w:'Cliente', t:'{14}. Y ayer… {15}.' },
+      { w:'Empleado', t:'La bloqueo ahora mismo y le enviamos una nueva.' },
+      { w:'Cliente', t:'{16}.' }
+    ],
+    clues: [
+      { es:'Quiero abrir una cuenta',         ru:'хочу відкрити рахунок',            tip:'кье́ро абрі́р у́на куе́нта' },
+      { es:'¿Tiene cita previa?',             ru:'у вас є попередній запис?',        tip:'тье́не сі́та преві́а' },
+      { es:'¿Qué documentos hacen falta?',    ru:'які документи потрібні?',          tip:'ке докуме́нтос а́сен фа́льта' },
+      { es:'Necesito su pasaporte y el NIE',  ru:'потрібен ваш паспорт і NIE',       tip:'несесі́то су пасапо́рте і ель ньє' },
+      { es:'¿Tiene comisiones esta cuenta?',  ru:'чи є комісії за цей рахунок?',     tip:'тье́не комісьйо́нес е́ста куе́нта' },
+      { es:'Es gratuita si domicilia la nómina', ru:'безкоштовний, якщо зарплата йде сюди', tip:'ес ґратуі́та сі домісі́ліа ла но́міна' },
+      { es:'Firme aquí, por favor',           ru:'підпишіть тут, будь ласка',        tip:'фі́рме акі́ пор фаво́р' },
+      { es:'¿Cuándo recibiré la tarjeta?',    ru:'коли я отримаю картку?',           tip:'куа́ндо ресібіре́ ла тархе́та' },
+      { es:'Le llegará por correo',           ru:'вона надійде вам поштою',          tip:'ле йеґара́ пор корре́о' },
+      { es:'También quiero hacer una transferencia', ru:'ще хочу зробити переказ',   tip:'тамбье́н кье́ро асе́р у́на трансфере́нсіа' },
+      { es:'¿Cuál es el IBAN?',               ru:'який IBAN?',                       tip:'куа́ль ес ель іба́н' },
+      { es:'¿Cuánto tarda en llegar el dinero?', ru:'скільки йтимуть гроші?',        tip:'куа́нто та́рда ен йеґа́р ель діне́ро' },
+      { es:'mi tarjeta antigua no funciona',  ru:'моя стара картка не працює',       tip:'мі тархе́та анті́ґуа но фунсьйо́на' },
+      { es:'El cajero no me dio el dinero',   ru:'банкомат не видав мені гроші',     tip:'ель кахе́ро но ме дьйо ель діне́ро' },
+      { es:'he perdido la tarjeta, quiero bloquearla', ru:'я загубив картку, хочу заблокувати', tip:'е перді́до ла тархе́та кье́ро блокеа́рла' },
+      { es:'Gracias por su ayuda',            ru:'дякую за допомогу',                tip:'ґра́сіас пор су аю́да' }
+    ]
+  },
+  7: {
+    code: 'Caso #04', title: 'Expediente Extranjería',
+    place: 'Відділ у справах іноземців, Валенсія · 09:15',
+    brief: 'Подання на NIE. Половина реплік — канцелярські, але саме їх треба зрозуміти.',
+    note: 'В Extranjería усе починається з «cita previa» — без попереднього запису не приймають. «Tasa» — держмито, яке платять у банку за бланком (modelo 790).',
+    lines: [
+      { w:'Solicitante', t:'{1}' },
+      { w:'Funcionaria', t:'{2}' },
+      { w:'Solicitante', t:'Sí, aquí está. {3}' },
+      { w:'Funcionaria', t:'{4}' },
+      { w:'Solicitante', t:'Creo que sí… {5}' },
+      { w:'Funcionaria', t:'Claro, sin problema.' },
+      { w:'Solicitante', t:'{6}.' },
+      { w:'Funcionaria', t:'Es el modelo EX-15. Mire… {7}.' },
+      { w:'Solicitante', t:'La hago ahora. {8}.' },
+      { w:'Funcionaria', t:'Entonces el trámite es más rápido.' },
+      { w:'Solicitante', t:'{9}' },
+      { w:'Funcionaria', t:'Eso se pide en el ayuntamiento. Y {10}.' },
+      { w:'Solicitante', t:'De acuerdo. {11}' },
+      { w:'Funcionaria', t:'Abajo, donde pone «firma del solicitante».' },
+      { w:'Solicitante', t:'{12}' },
+      { w:'Funcionaria', t:'Unas cuatro semanas. {13}.' },
+      { w:'Solicitante', t:'{14}' },
+      { w:'Funcionaria', t:'Sí, con este permiso puede trabajar.' },
+      { w:'Solicitante', t:'{15}' },
+      { w:'Funcionaria', t:'Dentro de un año.' },
+      { w:'Solicitante', t:'{16}.' }
+    ],
+    clues: [
+      { es:'Buenos días, tengo cita a las nueve y cuarto', ru:'доброго ранку, у мене запис на 9:15', tip:'буе́нос ді́ас те́нґо сі́та а лас нуе́ве і куа́рто' },
+      { es:'¿Me enseña el justificante de la cita?', ru:'покажете підтвердження запису?', tip:'ме енсе́нья ель хустіфіка́нте де ла сі́та' },
+      { es:'Vengo a solicitar el NIE',        ru:'я прийшов подати на NIE',          tip:'ве́нґо а солісіта́р ель ньє' },
+      { es:'¿Trae el formulario relleno?',    ru:'ви принесли заповнений бланк?',    tip:'тра́е ель формула́ріо реє́но' },
+      { es:'¿Puede hablar más despacio, por favor?', ru:'можете говорити повільніше?', tip:'пуе́де абла́р мас деспа́сіо пор фаво́р' },
+      { es:'No entiendo este papel',          ru:'я не розумію цей папір',           tip:'но ентье́ндо е́сте папе́ль' },
+      { es:'falta una copia del pasaporte',   ru:'бракує копії паспорта',            tip:'фа́льта у́на ко́піа дель пасапо́рте' },
+      { es:'Tengo protección temporal',       ru:'у мене тимчасовий захист',         tip:'те́нґо протексьйо́н темпора́ль' },
+      { es:'Necesito el certificado de empadronamiento', ru:'мені потрібна довідка про прописку', tip:'несесі́то ель сертіфіка́до де емпадронамье́нто' },
+      { es:'tiene que pagar la tasa en el banco', ru:'треба сплатити мито в банку',  tip:'тье́не ке паґа́р ла та́са ен ель ба́нко' },
+      { es:'¿Dónde tengo que firmar?',        ru:'де мені підписати?',               tip:'до́нде те́нґо ке фірма́р' },
+      { es:'¿Cuánto tarda el trámite?',       ru:'скільки триває процедура?',        tip:'куа́нто та́рда ель тра́міте' },
+      { es:'Le avisaremos por SMS',           ru:'ми повідомимо вас смс-кою',        tip:'ле авісаре́мос пор е́се-е́ме-е́се' },
+      { es:'¿Puedo trabajar con este permiso?', ru:'чи можу я працювати з цим дозволом?', tip:'пуе́до трабаха́р кон е́сте пермі́со' },
+      { es:'¿Cuándo tengo que renovarlo?',    ru:'коли треба його продовжити?',      tip:'куа́ндо те́нґо ке ренова́рло' },
+      { es:'Muchas gracias por la información', ru:'щиро дякую за інформацію',       tip:'му́час ґра́сіас пор ла інформасьйо́н' }
+    ]
+  },
+  8: {
+    code: 'Caso #05', title: 'Código Botica',
+    place: 'Аптека на головному проспекті · 18:00',
+    brief: 'Ти захворів і прийшов в аптеку. Симптоми, ліки й режим прийому — усе іспанською.',
+    note: 'Дієслово doler працює як «подобатися»: Me duele la cabeza (одна голова) проти Me duelen los pies (кілька ніг) — змінюється дієслово, а не займенник.',
+    lines: [
+      { w:'Farmacéutico', t:'Buenas tardes. {1}' },
+      { w:'Cliente', t:'Buenas tardes. {2}.' },
+      { w:'Farmacéutico', t:'{3}' },
+      { w:'Cliente', t:'{4} y {5}.' },
+      { w:'Farmacéutico', t:'¿Algún dolor más?' },
+      { w:'Cliente', t:'Sí, {6} y {7}.' },
+      { w:'Farmacéutico', t:'{8}' },
+      { w:'Cliente', t:'No, que yo sepa. {9}' },
+      { w:'Farmacéutico', t:'Para el ibuprofeno no; para antibióticos sí.' },
+      { w:'Cliente', t:'Entiendo. {10}' },
+      { w:'Farmacéutico', t:'Sí, tome este jarabe.' },
+      { w:'Cliente', t:'{11}' },
+      { w:'Farmacéutico', t:'{12}, {13}.' },
+      { w:'Cliente', t:'{14}' },
+      { w:'Farmacéutico', t:'Puede causar un poco de sueño. Si no mejora, {15}.' },
+      { w:'Cliente', t:'De acuerdo. Muchas gracias.' },
+      { w:'Farmacéutico', t:'{16}' }
+    ],
+    clues: [
+      { es:'¿En qué puedo ayudarle?',         ru:'чим можу вам допомогти?',          tip:'ен ке пуе́до аюда́рле' },
+      { es:'No me siento bien desde esta mañana', ru:'мені зле з самого ранку',      tip:'но ме сье́нто бье́н де́сде е́ста манья́на' },
+      { es:'¿Qué síntomas tiene?',            ru:'які у вас симптоми?',              tip:'ке сі́нтомас тье́не' },
+      { es:'Me duele mucho la cabeza',        ru:'у мене сильно болить голова',      tip:'ме дуе́ле му́чо ла кабе́са' },
+      { es:'tengo fiebre alta',               ru:'у мене висока температура',        tip:'те́нґо фье́бре а́льта' },
+      { es:'me duele la garganta al tragar',  ru:'болить горло, коли ковтаю',        tip:'ме дуе́ле ла ґарґа́нта аль траґа́р' },
+      { es:'tengo tos seca',                  ru:'у мене сухий кашель',              tip:'те́нґо тос се́ка' },
+      { es:'¿Es alérgico a algún medicamento?', ru:'у вас алергія на якісь ліки?',   tip:'ес але́рхіко а альґу́н медікаме́нто' },
+      { es:'¿Necesito receta médica?',        ru:'мені потрібен рецепт лікаря?',     tip:'несесі́то ресе́та ме́діка' },
+      { es:'¿Tiene algo para el dolor de estómago?', ru:'є щось від болю в шлунку?', tip:'тье́не а́льґо па́ра ель доло́р де есто́маґо' },
+      { es:'¿Cómo debo tomar este medicamento?', ru:'як мені приймати ці ліки?',     tip:'ко́мо де́бо тома́р е́сте медікаме́нто' },
+      { es:'Tome una pastilla cada ocho horas', ru:'приймайте по таблетці кожні вісім годин', tip:'то́ме у́на пасті́йя ка́да о́чо о́рас' },
+      { es:'después de las comidas',          ru:'після їжі',                        tip:'деспуе́с де лас комі́дас' },
+      { es:'¿Tiene algún efecto secundario?', ru:'чи є побічні ефекти?',             tip:'тье́не альґу́н ефе́кто секунда́ріо' },
+      { es:'debe ir al médico de urgencias',  ru:'вам треба до чергового лікаря',    tip:'де́бе ір аль ме́діко де урхе́нсіас' },
+      { es:'¡Que se mejore pronto!',          ru:'одужуйте швидше!',                 tip:'ке се мехо́ре про́нто' }
+    ]
+  }
+};
+function attachCasos(levels){ levels.forEach(l => { if (CASOS[l.id]) l.caso = CASOS[l.id]; }); }
+attachCasos(SEED);
+
 const KEY = 'azulejo:progress:v1';
 const DICT_KEY = 'azulejo:dict:v1';
 const SETTINGS_KEY = 'azulejo:settings:v1';
 const GEMINI_MODEL = 'gemini-flash-lite-latest';
 const PER_Q_TARGET = 4200;   // мс на питання для трьох плиток
 const EXAM_SIZE = 16;
+const CASO_QUIZ = 8;         // питань в експрес-перевірці «закриття справи»
 const clone = x => JSON.parse(JSON.stringify(x));
 
 let LEVELS = [];
-let progress = { v:1, audio:true, sections:{}, exams:{} };
+let progress = { v:1, audio:true, sections:{}, exams:{}, casos:{} };
 let settings = { geminiKey:'' };
-let state = { view:'home', levelId:1, sectionId:null, exam:false, learn:0, quiz:null, expanded:{}, pendingImg:null, scan:null, scanErr:null, keyReturn:null };
+let state = { view:'home', levelId:1, sectionId:null, exam:false, runKind:'section', learn:0, quiz:null, expanded:{}, pendingImg:null, scan:null, scanErr:null, keyReturn:null, caso:null };
 let storageOK = true;
 
 /* ---------------- зберігання ---------------- */
@@ -642,6 +907,7 @@ async function loadProgress(){
     const r = await box.get(KEY);
     if (r && r.value) progress = Object.assign(progress, JSON.parse(r.value));
   }catch(e){ /* ключа ще немає — це нормально */ }
+  if (!progress.casos) progress.casos = {};   // збережений прогрес міг бути ще без справ
 }
 async function saveProgress(){
   try{ await box.set(KEY, JSON.stringify(progress)); }
@@ -661,6 +927,7 @@ async function loadDict(){
     }
   }catch(e){ LEVELS = clone(SEED); }
   ensureMyDict();
+  attachCasos(LEVELS);   // справи живуть у коді, тож оновлюються і для збережених словників
   // «Мій словник» завжди останній, навіть коли домержилися нові вбудовані рівні
   LEVELS = LEVELS.filter(l => !l.my).concat(LEVELS.filter(l => l.my));
   await saveDict();
@@ -826,6 +1093,7 @@ function startRun(levelId, sectionId, isExam){
     questions = shuffle(s.items).map(it => makeQuestion(it, s.items, s.modes));
   }
   state.levelId = levelId; state.sectionId = sectionId; state.exam = !!isExam;
+  state.runKind = isExam ? 'exam' : 'section';
   state.quiz = { questions, idx:0, results:[], startedAt:null, elapsed:0, locked:false };
   state.view = 'quiz';
   render();
@@ -883,6 +1151,15 @@ function viewHome(){
          + '<span class="right">'+(r ? stars(r.stars)+'<div class="time">'+fmt(r.best)+'</div>'
                                      : '<div class="time none">—:—</div>')+'</span></button>';
     });
+    if (lv.caso){
+      const rc = progress.casos[lv.id];
+      h += '<button class="row" data-caso="'+lv.id+'">'
+         + '<span class="num">🕵</span>'
+         + '<span><span class="name">Детектив</span><span class="sub">'
+         + esc(lv.caso.code.toUpperCase())+' · '+lv.caso.clues.length+' УЛИК</span></span>'
+         + '<span class="right">'+(rc ? stars(rc.stars)+'<div class="time">'+fmt(rc.best)+'</div>'
+                                      : '<div class="time none">—:—</div>')+'</span></button>';
+    }
     if (!lv.my){
       const ex = recExam(lv.id), open = sectionsDone(lv);
       h += '<button class="row'+(open?'':' locked')+'" data-exam="'+lv.id+'">'
@@ -927,7 +1204,8 @@ function viewLearn(){
 function viewQuiz(){
   const q = state.quiz, cur = q.questions[q.idx];
   const lv = level(state.levelId);
-  const s = state.exam ? null : lv.sections.find(x=>x.id===state.sectionId);
+  const isCaso = state.runKind === 'caso';
+  const s = (state.exam || isCaso) ? null : lv.sections.find(x=>x.id===state.sectionId);
   const cols = Math.min(q.questions.length, 8);
 
   let m = '<div class="mosaic" style="--cols:'+cols+'">';
@@ -941,7 +1219,8 @@ function viewQuiz(){
   cur.options.forEach((o,i) => { opts += '<button class="opt" data-ans="'+i+'">'+esc(o)+'</button>'; });
   opts += '</div>';
 
-  return header(state.exam ? 'Повний рівень' : s.title, state.exam ? 'Examen · '+lv.title : 'Practica · '+s.tag, 'home')
+  return header(isCaso ? 'Закриття справи' : state.exam ? 'Повний рівень' : s.title,
+                isCaso ? lv.caso.code+' · '+lv.caso.title : state.exam ? 'Examen · '+lv.title : 'Practica · '+s.tag, 'home')
     + m
     + '<div class="qbar"><span>'+(q.idx+1)+' / '+q.questions.length+'</span><span class="clock" id="clock">00:00</span></div>'
     + '<div class="prompt"><div class="ask">'+esc(cur.ask)+'</div>'+cur.view+'</div>'
@@ -953,8 +1232,9 @@ function viewQuiz(){
 function viewResult(){
   const r = state.result;
   const lv = level(state.levelId);
-  const s = state.exam ? null : lv.sections.find(x=>x.id===state.sectionId);
-  let h = header(state.exam ? 'Повний рівень' : s.title, 'Resultado', 'home');
+  const isCaso = state.runKind === 'caso';
+  const s = (state.exam || isCaso) ? null : lv.sections.find(x=>x.id===state.sectionId);
+  let h = header(isCaso ? 'Справу закрито' : state.exam ? 'Повний рівень' : s.title, 'Resultado', 'home');
   h += '<div class="result">'
      + '<div class="stars-big">'+'★'.repeat(r.stars)+'<span style="color:rgba(237,230,214,.22)">'+'★'.repeat(3-r.stars)+'</span></div>'
      + '<div class="headline">'+(r.stars===3?'¡Perfecto!':r.stars===2?'¡Muy bien!':'¡Otra vez!')+'</div>'
@@ -975,9 +1255,90 @@ function viewResult(){
   }
   h += '</div>';
   h += '<button class="btn" data-again="1">Пройти знову</button>';
-  if (!state.exam) h += '<button class="btn ghost small" data-relearn="1">Повторити картки</button>';
+  if (isCaso) h += '<button class="btn ghost small" data-phase="3">Повернутись до ключа</button>';
+  else if (!state.exam) h += '<button class="btn ghost small" data-relearn="1">Повторити картки</button>';
   h += '<button class="btn ghost small" data-go="home">До рівнів</button>';
   return h;
+}
+
+/* ---------------- метод «Детектива» ----------------
+   Фаза 1 — читаєш діалог без перекладу. Фаза 2 — тицяєш незрозуміле
+   й збираєш улики. Фаза 3 — ключ розшифровки. Фаза 4 — закриття справи. */
+function casoOf(levelId){ const lv = level(levelId); return lv && lv.caso; }
+
+function casoLine(c, ln, marked, interactive){
+  let out = '';
+  ln.t.split(/(\{\d+\})/).forEach(p => {
+    const m = p.match(/^\{(\d+)\}$/);
+    if (!m){ out += esc(p); return; }
+    const n = +m[1], cl = c.clues[n-1];
+    if (!cl){ out += esc(p); return; }
+    out += '<span class="clue'+(marked[n]?' mark':'')+'"'+(interactive?' data-clue="'+n+'"':'')+'>'
+         + '<span class="cn">'+n+'</span>'+esc(cl.es)+'</span>';
+  });
+  return out;
+}
+
+function viewCaso(){
+  const c = casoOf(state.levelId), st = state.caso, ph = st.phase;
+  const lv = level(state.levelId);
+  let h = header(c.title, c.code+' · '+lv.title, 'home');
+  h += '<div class="phases">'+[1,2,3,4].map(i=>'<i class="'+(i<=ph?'on':'')+'"></i>').join('')+'</div>';
+
+  if (ph === 1){
+    h += '<div class="expediente"><div class="stamp">Expediente · confidencial</div>'
+       + '<div class="place">'+esc(c.place)+'</div>'
+       + '<div class="brief">'+esc(c.brief)+'</div></div>';
+    h += '<div class="counter"><span>ФАЗА 1 · ОГЛЯД СЦЕНИ</span><span>ЧИТАЙ БЕЗ СЛОВНИКА</span></div>';
+    h += '<div class="dlg">' + c.lines.map(ln =>
+           '<div class="ln"><span class="who">'+esc(ln.w)+'</span>'+casoLine(c, ln, {}, false)+'</div>').join('') + '</div>';
+    h += '<button class="btn" data-phase="2">Збирати улики</button>';
+    h += '<button class="btn ghost small" data-go="home">Вийти зі справи</button>';
+    return h;
+  }
+
+  if (ph === 2){
+    const n = Object.keys(st.marked).filter(k => st.marked[k]).length;
+    h += '<div class="counter"><span>ФАЗА 2 · ЗБІР УЛИК</span><span>ЗІБРАНО: '+n+'</span></div>';
+    h += '<div class="hunch">Тицяй фрази, які <b>не зрозумів</b> — вони підуть у список улик. Здогади поки що не перевіряй.</div>';
+    h += '<div class="dlg">' + c.lines.map(ln =>
+           '<div class="ln"><span class="who">'+esc(ln.w)+'</span>'+casoLine(c, ln, st.marked, true)+'</div>').join('') + '</div>';
+    h += '<button class="btn" data-phase="3">Ключ розшифровки</button>';
+    h += '<button class="btn ghost small" data-phase="1">Перечитати сцену</button>';
+    return h;
+  }
+
+  if (ph === 3){
+    const mine = c.clues.filter((_,i) => st.marked[i+1]).length;
+    h += '<div class="counter"><span>ФАЗА 3 · КЛЮЧ ШИФРУ</span><span>ТВОЇХ УЛИК: '+mine+'</span></div>';
+    h += '<div class="hunch"><b>Звіряй здогади.</b> Підсвічені рядки — те, що ти позначив як незрозуміле.</div>';
+    h += '<div class="keylist">';
+    c.clues.forEach((cl,i) => {
+      h += '<div class="keyrow'+(st.marked[i+1]?' mine':'')+'"><span class="kn">'+(i+1)+'</span>'
+         + '<span class="kt"><span class="es">'+esc(cl.es)+'</span>'
+         + '<div class="tip">['+esc(cl.tip)+']</div>'
+         + '<div class="ru">'+esc(cl.ru)+'</div></span>'
+         + '<button data-say="'+esc(cl.es)+'" aria-label="Прослухати">🔊</button></div>';
+    });
+    h += '</div>';
+    h += '<div class="hunch">🔍 <b>Нотатка детектива.</b> '+esc(c.note)+'</div>';
+    h += '<button class="btn" data-phase="4">Закрити справу</button>';
+    h += '<button class="btn ghost small" data-phase="2">Назад до сцени</button>';
+    return h;
+  }
+
+  return h;
+}
+
+function startCasoRun(levelId){
+  const c = casoOf(levelId);
+  const items = c.clues;
+  const modes = ['es_ru','ru_es','audio_es'];
+  const questions = shuffle(items).slice(0, CASO_QUIZ).map(it => makeQuestion(it, items, modes));
+  state.levelId = levelId; state.sectionId = null; state.exam = false; state.runKind = 'caso';
+  state.quiz = { questions, idx:0, results:[], startedAt:null, elapsed:0, locked:false };
+  state.view = 'quiz';
+  render();
 }
 
 /* ---------------- камера + Gemini ---------------- */
@@ -1116,6 +1477,7 @@ function render(){
   else if (state.view === 'apikey') app.innerHTML = viewApiKey();
   else if (state.view === 'scan') app.innerHTML = viewScan();
   else if (state.view === 'review') app.innerHTML = viewReview();
+  else if (state.view === 'caso') app.innerHTML = viewCaso();
   window.scrollTo(0,0);
 }
 
@@ -1177,8 +1539,9 @@ async function finish(){
     if (q.results[i] === false && !seen.has(qq.item.es)){ seen.add(qq.item.es); missed.push(qq.item); }
   });
 
-  const store = state.exam ? progress.exams : progress.sections;
-  const key = state.exam ? String(state.levelId) : state.levelId + ':' + state.sectionId;
+  const isCaso = state.runKind === 'caso';
+  const store = isCaso ? progress.casos : state.exam ? progress.exams : progress.sections;
+  const key = (isCaso || state.exam) ? String(state.levelId) : state.levelId + ':' + state.sectionId;
   const prev = store[key];
   const isBest = !prev || ms < prev.best;
   store[key] = {
@@ -1196,13 +1559,33 @@ async function finish(){
 
 /* ---------------- події ---------------- */
 app.addEventListener('click', async (e) => {
-  const t = e.target.closest('[data-go],[data-play],[data-exam],[data-audio],[data-say],[data-next],[data-prev],[data-skip],[data-ans],[data-again],[data-relearn],[data-toggle],[data-cam],[data-apikey],[data-savekey],[data-review-add]');
+  const t = e.target.closest('[data-go],[data-play],[data-exam],[data-audio],[data-say],[data-next],[data-prev],[data-skip],[data-ans],[data-again],[data-relearn],[data-toggle],[data-cam],[data-apikey],[data-savekey],[data-review-add],[data-caso],[data-phase],[data-clue]');
   if (!t) return;
   const d = t.dataset;
 
   if (d.say){ speak(d.say); return; }
 
   if (d.toggle){ state.expanded[d.toggle] = !state.expanded[d.toggle]; render(); return; }
+
+  if (d.caso){
+    state.levelId = +d.caso;
+    state.caso = { phase:1, marked:{} };
+    state.view = 'caso'; render(); return;
+  }
+  if (d.clue){
+    const n = d.clue, y = window.scrollY;
+    state.caso.marked[n] = !state.caso.marked[n];
+    render();
+    window.scrollTo(0, y);   // позначаємо улики посеред діалогу — не скидати прокрутку
+    return;
+  }
+  if (d.phase){
+    if (!state.caso) state.caso = { phase:1, marked:{} };
+    if (d.phase === '4'){ startCasoRun(state.levelId); return; }
+    clearInterval(ticker);
+    state.caso.phase = +d.phase;
+    state.view = 'caso'; render(); return;
+  }
 
   if (d.cam){ state.scanErr = null; const f = document.getElementById('camfile'); if (f){ f.value = ''; f.click(); } return; }
   if (d.apikey){ state.keyReturn = null; state.view = 'apikey'; render(); return; }
@@ -1256,7 +1639,11 @@ app.addEventListener('click', async (e) => {
   }
   if (d.skip){ startRun(state.levelId, state.sectionId, false); return; }
   if (d.ans){ answer(+d.ans); return; }
-  if (d.again){ startRun(state.levelId, state.sectionId, state.exam); return; }
+  if (d.again){
+    if (state.runKind === 'caso') startCasoRun(state.levelId);
+    else startRun(state.levelId, state.sectionId, state.exam);
+    return;
+  }
   if (d.relearn){ state.learn = 0; state.view = 'learn'; render(); return; }
 });
 
