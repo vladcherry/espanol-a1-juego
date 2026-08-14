@@ -1,4 +1,4 @@
-const CACHE = 'azulejo-v8';
+const CACHE = 'azulejo-v9';
 const ASSETS = [
   './',
   './index.html',
@@ -8,8 +8,14 @@ const ASSETS = [
   './icon-maskable-512.png'
 ];
 
+// `cache: 'reload'` обов’язковий: інакше addAll бере файли з HTTP-кешу браузера
+// (GitHub Pages віддає max-age=600) і нова версія кешу наповнюється старими файлами.
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', e => {
